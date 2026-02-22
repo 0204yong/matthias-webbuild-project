@@ -113,9 +113,12 @@ function initLottoTool() {
             const interval = setInterval(() => {
                 ball.textContent = Math.floor(Math.random()*45)+1;
                 playSound('rolling');
-            }, 80);
-            await new Promise(r => setTimeout(r, 600 + (i * 200)));
+            }, 100); // 롤링 주기 약간 완화 (80ms -> 100ms)
+
+            // 추출 속도를 훨씬 여유 있게 조정 (간격을 200ms에서 500ms로 확대)
+            await new Promise(r => setTimeout(r, 800 + (i * 500)));
             clearInterval(interval);
+            
             ball.className = `number ${getBallColorClass(val)}`;
             ball.textContent = val;
             playSound('pop');
