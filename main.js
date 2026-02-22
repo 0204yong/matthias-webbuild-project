@@ -15,12 +15,16 @@ function playSound(type) {
 }
 
 // --- DOM Elements ---
-const btnAuto = document.getElementById('btn-auto');
-const btnToggleManual = document.getElementById('btn-toggle-manual');
-const btnAnalyze = document.getElementById('btn-analyze');
-const display = document.getElementById('numbers-display');
-const manualArea = document.getElementById('manual-area');
+const tabAuto = document.getElementById('tab-auto');
+const tabManual = document.getElementById('tab-manual');
+const viewAuto = document.getElementById('view-auto');
+const viewManual = document.getElementById('view-manual');
+
+const btnGenerateAuto = document.getElementById('btn-generate-auto');
+const btnAnalyzeManual = document.getElementById('btn-analyze-manual');
+const autoDisplay = document.getElementById('auto-numbers-display');
 const reportSection = document.getElementById('analysis-report');
+const currentAnalyzedTag = document.getElementById('current-analyzed-numbers');
 
 // Report Details
 const patternGrade = document.getElementById('pattern-grade');
@@ -31,27 +35,34 @@ const valOddEven = document.getElementById('val-odd-even');
 const valHighLow = document.getElementById('val-high-low');
 const valConsecutive = document.getElementById('val-consecutive');
 
-// --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('button, a, input').forEach(el => {
-        el.addEventListener('mouseenter', () => playSound('menuHover'));
-    });
+// --- Tab Switching ---
+tabAuto.addEventListener('click', () => {
+    playSound('click');
+    tabAuto.classList.add('active');
+    tabManual.classList.remove('active');
+    viewAuto.style.display = 'block';
+    viewManual.style.display = 'none';
+    reportSection.style.display = 'none'; // Hide report when switching
 });
 
-// --- Logic ---
-btnToggleManual.addEventListener('click', () => {
+tabManual.addEventListener('click', () => {
     playSound('click');
-    manualArea.style.display = manualArea.style.display === 'none' ? 'block' : 'none';
-    if (manualArea.style.display === 'block') manualArea.scrollIntoView({ behavior: 'smooth' });
+    tabManual.classList.add('active');
+    tabAuto.classList.remove('active');
+    viewManual.style.display = 'block';
+    viewAuto.style.display = 'none';
+    reportSection.style.display = 'none'; // Hide report when switching
 });
 
-btnAuto.addEventListener('click', async () => {
+// --- Auto Recommendation Logic ---
+btnGenerateAuto.addEventListener('click', async () => {
     playSound('click');
-    btnAuto.disabled = true;
-    btnAuto.textContent = '분석 조합 추출 중... 🎰';
-    display.innerHTML = '';
-    
-    const finalNumbers = Array.from({length: 45}, (_, i) => i + 1)
+    btnGenerateAuto.disabled = true;
+    btnGenerateAuto.textContent = '조합 추출 중... 🎰';
+    autoDisplay.innerHTML = '';
+    reportSection.style.display = 'none';
+
+    const numbers = Array.from({length: 45}, (_, i) => i + 1)
         .sort(() => Math.random() - 0.5)
         .slice(0, 6)
         .sort((a,b)=>a-b);
@@ -61,14 +72,14 @@ btnAuto.addEventListener('click', async () => {
         const ball = document.createElement('div');
         ball.className = 'number spinning';
         ball.textContent = '?';
-        display.appendChild(ball);
+        autoDisplay.appendChild(ball);
         balls.push(ball);
     }
 
     for (let i = 0; i < 6; i++) {
         const ball = balls[i];
-        const val = finalNumbers[i];
-        const duration = 500 + (i * 200);
+        const val = numbers[i];
+        const duration = 400 + (i * 200);
         const interval = setInterval(() => {
             ball.textContent = Math.floor(Math.random()*45)+1;
             playSound('rolling');
@@ -80,19 +91,22 @@ btnAuto.addEventListener('click', async () => {
         playSound('pop');
     }
 
-    runProfessionalAnalysis(finalNumbers);
-    btnAuto.disabled = false;
-    btnAuto.textContent = '자동 번호 추출 ✨';
+    runProfessionalAnalysis(numbers, '추천 번호');
+    btnGenerateAuto.disabled = false;
+    btnGenerateAuto.textContent = '번호 추출 시작 ✨';
 });
 
-btnAnalyze.addEventListener('click', () => {
+// --- Manual Analysis Logic ---
+btnAnalyzeManual.addEventListener('click', () => {
     playSound('click');
     const inputs = document.querySelectorAll('.manual-inputs input');
     const numbers = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
+    
     if (numbers.length < 6) { alert('6개의 번호를 모두 입력해주세요!'); return; }
     if (new Set(numbers).size !== 6) { alert('중복된 번호가 있습니다!'); return; }
     if (numbers.some(n => n < 1 || n > 45)) { alert('1~45 사이의 숫자만 입력 가능합니다!'); return; }
-    runProfessionalAnalysis(numbers.sort((a,b)=>a-b));
+
+    runProfessionalAnalysis(numbers.sort((a,b)=>a-b), '입력 번호');
 });
 
 function getBallColorClass(val) {
@@ -103,10 +117,10 @@ function getBallColorClass(val) {
     return 'num-41-45';
 }
 
-function runProfessionalAnalysis(numbers) {
+function runProfessionalAnalysis(numbers, type) {
     reportSection.style.display = 'block';
+    currentAnalyzedTag.textContent = `${type}: ${numbers.join(', ')}`;
     
-    // Core Calculations
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
     const evens = 6 - odds;
@@ -115,14 +129,12 @@ function runProfessionalAnalysis(numbers) {
     let consecs = 0;
     for (let i = 0; i < numbers.length - 1; i++) if (numbers[i] + 1 === numbers[i+1]) consecs++;
 
-    // Pattern Matching Logic (Qualitative)
     let stabilityPoints = 0;
     if (sum >= 100 && sum <= 170) stabilityPoints++;
     if (odds >= 2 && odds <= 4) stabilityPoints++;
     if (highs >= 2 && highs <= 4) stabilityPoints++;
     if (consecs <= 1) stabilityPoints++;
 
-    // Grade Mapping
     let grade, desc, icon;
     if (stabilityPoints === 4) {
         grade = "최적의 통계적 밸런스";
@@ -142,11 +154,9 @@ function runProfessionalAnalysis(numbers) {
         icon = "🌋";
     }
 
-    // Update UI
     patternGrade.textContent = grade;
     patternDesc.textContent = desc;
     statusIcon.textContent = icon;
-    
     valSum.textContent = sum;
     valOddEven.textContent = `${odds}:${evens}`;
     valHighLow.textContent = `${highs}:${lows}`;
@@ -155,9 +165,14 @@ function runProfessionalAnalysis(numbers) {
     reportSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Theme
+// Theme Toggle
 const themeToggle = document.getElementById('theme-toggle');
 themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
     themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+});
+
+// Hover Sounds
+document.querySelectorAll('button, a, input').forEach(el => {
+    el.addEventListener('mouseenter', () => playSound('menuHover'));
 });
