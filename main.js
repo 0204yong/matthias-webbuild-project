@@ -4,20 +4,52 @@ function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
+    
     switch(type) {
-        case 'menuHover': osc.type = 'square'; osc.frequency.setValueAtTime(1200, audioCtx.currentTime); gain.gain.setValueAtTime(0.02, audioCtx.currentTime); break;
-        case 'click': osc.type = 'triangle'; osc.frequency.setValueAtTime(1000, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.06); gain.gain.setValueAtTime(0.06, audioCtx.currentTime); break;
-        case 'rolling': osc.type = 'sawtooth'; osc.frequency.setValueAtTime(180, audioCtx.currentTime); gain.gain.setValueAtTime(0.01, audioCtx.currentTime); break;
-        case 'pop': osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.04); gain.gain.setValueAtTime(0.04, audioCtx.currentTime); break;
+        case 'click': // 실제 마우스 클릭 느낌의 '딸깍' 소리
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1500, audioCtx.currentTime); // 고주파로 날카롭게
+            osc.frequency.exponentialRampToValueAtTime(500, audioCtx.currentTime + 0.03);
+            
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // 볼륨은 짧고 강하게
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.03);
+            break;
+            
+        case 'rolling': // 슬롯머신 롤링 (부드러운 저음)
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+            break;
+            
+        case 'pop': // 번호 고정 시 효과음
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.04);
+            break;
     }
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.07);
 }
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('button, a, input').forEach(el => {
-        el.addEventListener('mouseenter', () => playSound('menuHover'));
+    // 모든 호버 사운드 리스너를 제거하고 클릭 리스너만 유지합니다.
+    document.querySelectorAll('button, a, input, .tab-btn').forEach(el => {
+        el.addEventListener('click', () => playSound('click'));
     });
 
     const themeToggle = document.getElementById('theme-toggle');
@@ -127,13 +159,11 @@ async function initResultsHistory() {
     const resultsBody = document.getElementById('results-body');
     const loadingSpinner = document.getElementById('loading-spinner');
     
-    // Calculate current round more accurately
     const today = new Date();
     const startDate = new Date(2025, 0, 4); 
     const weeksDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24 * 7));
     currentMaxRound = BASE_ROUND + weeksDiff;
     
-    // Load last 10 rounds for first view
     await loadRounds(currentMaxRound, 10);
     loadingSpinner.style.display = 'none';
     
@@ -161,12 +191,9 @@ async function loadRounds(startRound, count) {
             if (data.returnValue === "success") {
                 const row = document.createElement('tr');
                 row.dataset.round = data.drwNo;
-                
                 const numbersArr = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
                 const numsHtml = numbersArr.map(n => `<div class="number ${getBallColorClass(n)}">${n}</div>`).join('');
                 const bonusHtml = `<div class="number ${getBallColorClass(data.bnusNo)}">${data.bnusNo}</div>`;
-                
-                // Format Currency
                 const prize = new Intl.NumberFormat('ko-KR').format(data.firstWinamnt);
                 
                 row.innerHTML = `
