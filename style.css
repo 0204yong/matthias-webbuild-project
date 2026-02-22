@@ -111,11 +111,11 @@ body.dark-mode .tab-btn.active { background: #2d3436; }
 .table-wrapper { background: var(--glass-bg); border-radius: 24px; border: 1px solid var(--glass-border); }
 
 /* Footer */
-footer { background: var(--text-main); color: white; padding: 80px 0 40px; margin-top: 100px; }
+footer { background: var(--text-main); color: white; padding: 80px 0 40px; margin-top: 100px; text-align: center; }
 .footer-logo { font-size: 2rem; font-weight: 900; margin-bottom: 1rem; }
-.footer-links { display: flex; gap: 30px; margin: 2rem 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; }
+.footer-links { display: flex; justify-content: center; gap: 30px; margin: 2rem 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; flex-wrap: wrap; }
 .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-weight: 600; }
-.copyright { opacity: 0.4; font-size: 0.8rem; }
+.copyright { opacity: 0.4; font-size: 0.8rem; width: 100%; }
 
 /* Ball Colors */
 .num-1-10 { background: #f1c40f; } .num-11-20 { background: #3498db; } .num-21-30 { background: #e74c3c; } .num-31-40 { background: #95a5a6; } .num-41-45 { background: #2ecc71; }
