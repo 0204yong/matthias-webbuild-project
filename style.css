@@ -27,9 +27,12 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
 .navbar { height: 70px; background: var(--card-bg); position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
 .nav-container { display: flex; justify-content: space-between; align-items: center; height: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px; }
 .nav-logo { font-size: 1.5rem; font-weight: 800; color: var(--accent-color); text-decoration: none; }
+.nav-links { display: flex; gap: 20px; }
+.nav-link { text-decoration: none; color: var(--text-primary); font-weight: 600; font-size: 0.95rem; transition: color 0.3s; }
+.nav-link:hover { color: var(--accent-color); }
 #theme-toggle { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
 
-/* Main Card and Mode Switching */
+/* Main Card */
 .main-card {
     background: var(--card-bg);
     padding: 2.5rem;
@@ -40,31 +43,21 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
 }
 
 .mode-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    background: rgba(0,0,0,0.03);
-    padding: 10px;
-    border-radius: 20px;
-    margin-bottom: 3rem;
-    max-width: 450px;
-    margin-left: auto;
-    margin-right: auto;
+    display: flex; justify-content: center; gap: 15px; background: rgba(0,0,0,0.03); padding: 10px;
+    border-radius: 20px; margin-bottom: 3rem; max-width: 450px; margin-left: auto; margin-right: auto;
 }
 
 .tab-btn {
     flex: 1; padding: 12px 20px; border: none; background: transparent; color: var(--text-secondary);
     font-weight: 800; font-size: 1rem; cursor: pointer; border-radius: 14px; transition: all 0.3s;
 }
-
 .tab-btn.active { background: var(--card-bg); color: var(--accent-color); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-/* Mode Views */
+/* Views & Controls */
 .game-header { text-align: center; margin-bottom: 2.5rem; }
 .game-header h1 { font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800; }
 .game-header p { color: var(--text-secondary); }
 
-/* Numbers Display */
 .numbers-display { display: flex; gap: 15px; margin: 2.5rem 0; justify-content: center; flex-wrap: wrap; min-height: 70px; }
 .number {
     width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -72,7 +65,6 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
 }
 .spinning { filter: blur(3px); transform: scale(0.9); transition: all 0.1s; }
 
-/* Manual Inputs */
 .manual-inputs { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 2rem 0; }
 .manual-inputs input {
     width: 65px; height: 65px; border-radius: 16px; border: 2px solid #ddd; text-align: center;
@@ -80,7 +72,6 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
 }
 .manual-inputs input:focus { border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 0 20px rgba(9, 132, 227, 0.15); }
 
-/* Buttons */
 .button-group { display: flex; justify-content: center; margin-top: 1.5rem; }
 .btn-primary, .btn-secondary {
     padding: 18px 48px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 1.1rem;
@@ -89,26 +80,36 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
 .btn-secondary { background: var(--btn-secondary); color: white; box-shadow: 0 8px 25px rgba(0, 184, 148, 0.3); }
 .btn-primary:hover, .btn-secondary:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
 
-/* --- Report Area Design --- */
+/* Report Area */
 .report-section { background: var(--card-bg); padding: 4rem 3rem; border-radius: 40px; box-shadow: var(--shadow); margin-bottom: 5rem; }
 .analyzed-numbers-tag { display: inline-block; background: var(--accent-color); color: white; padding: 6px 16px; border-radius: 30px; font-weight: 800; font-size: 0.9rem; margin-bottom: 1.5rem; }
 .report-header { text-align: center; margin-bottom: 3rem; }
-.report-header h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
-.disclaimer { font-size: 0.85rem; color: #e74c3c; font-weight: 600; }
+.disclaimer { font-size: 0.85rem; color: #e74c3c; font-weight: 600; margin-top: 10px; }
 
-.status-card {
-    display: flex; align-items: center; gap: 2.5rem; background: rgba(9, 132, 227, 0.05);
-    padding: 2.5rem; border-radius: 32px; border: 1px solid rgba(9, 132, 227, 0.1); margin-bottom: 3rem;
-}
+.status-card { display: flex; align-items: center; gap: 2.5rem; background: rgba(9, 132, 227, 0.05); padding: 2.5rem; border-radius: 32px; border: 1px solid rgba(9, 132, 227, 0.1); margin-bottom: 3rem; }
 .status-icon { font-size: 4rem; }
 .status-text h3 { font-size: 2.2rem; font-weight: 800; color: var(--accent-color); }
-
 .analysis-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
 .analysis-item-card { background: var(--card-bg); padding: 2rem; border-radius: 28px; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; }
 .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .item-title { font-weight: 800; color: var(--text-primary); }
 .item-value { font-weight: 800; font-size: 1.4rem; color: var(--accent-color); background: rgba(9, 132, 227, 0.08); padding: 4px 14px; border-radius: 12px; }
 .item-desc { font-size: 0.9rem; color: var(--text-secondary); }
+
+/* Guide Preview */
+.guide-preview-section { margin-top: 4rem; }
+.guide-preview-section h2 { font-size: 1.8rem; margin-bottom: 2rem; text-align: center; }
+.guide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+.guide-card { background: var(--card-bg); padding: 2rem; border-radius: 24px; box-shadow: var(--shadow); text-decoration: none; color: var(--text-primary); transition: transform 0.3s; border: 1px solid rgba(0,0,0,0.05); }
+.guide-card:hover { transform: translateY(-5px); border-color: var(--accent-color); }
+.guide-card h3 { color: var(--accent-color); margin-bottom: 1rem; }
+.guide-card p { color: var(--text-secondary); }
+
+/* Footer */
+footer { border-top: 1px solid rgba(0,0,0,0.1); padding: 40px 0; margin-top: 60px; text-align: center; color: var(--text-secondary); font-size: 0.9rem; }
+.footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 20px; }
+.footer-links a { text-decoration: none; color: var(--text-secondary); transition: color 0.3s; }
+.footer-links a:hover { color: var(--accent-color); }
 
 /* Ball Colors */
 .num-1-10 { background: linear-gradient(135deg, #f1c40f, #f39c12); }
@@ -121,4 +122,5 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
     .container { padding-top: 80px; }
     .status-card { flex-direction: column; text-align: center; gap: 1rem; }
     .analysis-details-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; } /* Mobile: Hide nav links for simplicity */
 }
