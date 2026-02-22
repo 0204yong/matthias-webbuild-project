@@ -4,224 +4,132 @@ function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    switch(type) {
-        case 'click':
-            osc.type = 'sine'; osc.frequency.setValueAtTime(1500, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.03);
-            break;
-        case 'rolling':
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            break;
-        case 'pop':
-            osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.04);
-            break;
+    if(type === 'click') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.03);
+    } else if(type === 'pop') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
     }
 }
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Theme setup
+    // Theme
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            themeToggle.textContent = '☀️';
-        }
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            themeToggle.textContent = isDark ? '☀️' : '🌙';
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
         });
     }
 
-    // Sound setup
-    document.querySelectorAll('button, a, input, .tab-btn').forEach(el => {
+    // Common Click Sound
+    document.querySelectorAll('button, a, .tab-btn').forEach(el => {
         el.addEventListener('click', () => playSound('click'));
     });
 
-    // Page routing
     if (document.getElementById('tab-auto')) initLottoTool();
     if (document.getElementById('results-body')) initResultsHistory();
 });
 
-// --- Lotto Tool Logic (Index) ---
+// --- Home Tool Logic ---
 function initLottoTool() {
-    const tabAuto = document.getElementById('tab-auto');
-    const tabManual = document.getElementById('tab-manual');
-    const viewAuto = document.getElementById('view-auto');
-    const viewManual = document.getElementById('view-manual');
-    const btnGenerateAuto = document.getElementById('btn-generate-auto');
-    const btnAnalyzeManual = document.getElementById('btn-analyze-manual');
-    
-    if (!tabAuto || !btnGenerateAuto) return;
+    const tabAuto = document.getElementById('tab-auto'), tabManual = document.getElementById('tab-manual');
+    const viewAuto = document.getElementById('view-auto'), viewManual = document.getElementById('view-manual');
+    const btnGen = document.getElementById('btn-generate-auto'), btnAnlz = document.getElementById('btn-analyze-manual');
 
-    tabAuto.addEventListener('click', () => {
-        tabAuto.classList.add('active'); tabManual.classList.remove('active');
-        viewAuto.style.display = 'block'; viewManual.style.display = 'none';
-        document.getElementById('analysis-report').style.display = 'none';
-    });
+    tabAuto.onclick = () => { tabAuto.className='tab-btn active'; tabManual.className='tab-btn'; viewAuto.style.display='block'; viewManual.style.display='none'; };
+    tabManual.onclick = () => { tabManual.className='tab-btn active'; tabAuto.className='tab-btn'; viewManual.style.display='block'; viewAuto.style.display='none'; };
 
-    tabManual.addEventListener('click', () => {
-        tabManual.classList.add('active'); tabAuto.classList.remove('active');
-        viewManual.style.display = 'block'; viewAuto.style.display = 'none';
-        document.getElementById('analysis-report').style.display = 'none';
-    });
-
-    btnGenerateAuto.addEventListener('click', async () => {
-        btnGenerateAuto.disabled = true; btnGenerateAuto.textContent = '추출 중...';
+    btnGen.onclick = async () => {
+        btnGen.disabled = true;
         const display = document.getElementById('auto-numbers-display');
         display.innerHTML = '';
-        document.getElementById('analysis-report').style.display = 'none';
-
-        const numbers = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
-        const balls = [];
-        for (let i = 0; i < 6; i++) {
-            const ball = document.createElement('div'); ball.className = 'number spinning'; ball.textContent = '?';
-            display.appendChild(ball); balls.push(ball);
+        const nums = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
+        
+        for (let n of nums) {
+            const ball = document.createElement('div');
+            ball.className = `number ${getBallColor(n)}`;
+            ball.textContent = n;
+            display.appendChild(ball);
+            playSound('pop');
+            await new Promise(r => setTimeout(r, 100));
         }
+        btnGen.disabled = false;
+        runAnalysis(nums, '추천 번호');
+    };
 
-        for (let i = 0; i < 6; i++) {
-            const ball = balls[i]; const val = numbers[i];
-            const interval = setInterval(() => { ball.textContent = Math.floor(Math.random()*45)+1; playSound('rolling'); }, 80);
-            await new Promise(r => setTimeout(r, 400 + (i * 150)));
-            clearInterval(interval);
-            ball.className = `number ${getBallColorClass(val)}`; ball.textContent = val; playSound('pop');
-        }
-
-        runProfessionalAnalysis(numbers, '추천 번호');
-        btnGenerateAuto.disabled = false; btnGenerateAuto.textContent = '번호 추출 시작 ✨';
-    });
-
-    btnAnalyzeManual.addEventListener('click', () => {
+    btnAnlz.onclick = () => {
         const inputs = document.querySelectorAll('.manual-inputs input');
-        const numbers = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
-        if (numbers.length < 6) { alert('6개의 번호를 모두 입력해주세요!'); return; }
-        runProfessionalAnalysis(numbers.sort((a,b)=>a-b), '입력 번호');
-    });
+        const nums = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
+        if (nums.length < 6) return alert('6개 번호를 입력하세요!');
+        runAnalysis(nums.sort((a,b)=>a-b), '입력 번호');
+    };
 }
 
 // --- Results History Logic ---
-const BASE_ROUND = 1153; 
 async function initResultsHistory() {
-    const resultsBody = document.getElementById('results-body');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const btnLoadMore = document.getElementById('btn-load-more');
+    const body = document.getElementById('results-body');
+    const spinner = document.getElementById('loading-spinner');
     
-    // 1. Find the latest available round
-    const today = new Date();
-    const startDate = new Date(2025, 0, 4); 
-    const weeksDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24 * 7));
-    let estimatedRound = BASE_ROUND + weeksDiff;
+    // Estimate latest round
+    const start = new Date(2025, 0, 4);
+    const weeks = Math.floor((new Date() - start) / (1000*60*60*24*7));
+    let round = 1153 + weeks;
 
-    loadingSpinner.innerHTML = `<p>데이터 서버(DH)에서 정보를 가져오는 중입니다... 🔄</p>`;
-    
-    // 2. Load first batch
-    let successCount = 0;
-    let r = estimatedRound;
-    while (successCount < 8 && r >= BASE_ROUND) {
-        const data = await fetchLottoData(r);
-        if (data && data.returnValue === "success") {
-            appendRow(data);
-            successCount++;
-        }
-        r--;
-    }
-    
-    loadingSpinner.style.display = 'none';
-    btnLoadMore.style.display = 'inline-block';
-    
-    btnLoadMore.addEventListener('click', async () => {
-        btnLoadMore.disabled = true;
-        const lastR = parseInt(resultsBody.lastElementChild.dataset.round) - 1;
-        let batchCount = 0;
-        let currentR = lastR;
-        while (batchCount < 8 && currentR >= BASE_ROUND) {
-            const data = await fetchLottoData(currentR);
-            if (data && data.returnValue === "success") {
-                appendRow(data);
-                batchCount++;
+    spinner.innerHTML = "데이터를 동기화 중입니다... 잠시만 기다려주세요. 🔄";
+
+    let loaded = 0;
+    while (loaded < 10 && round > 1150) {
+        try {
+            const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
+            const data = await res.json();
+            if (data.returnValue === "success") {
+                appendHistoryRow(data);
+                loaded++;
             }
-            currentR--;
-        }
-        btnLoadMore.disabled = false;
-    });
-}
-
-async function fetchLottoData(round) {
-    try {
-        const target = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`;
-        const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(target)}`);
-        return await response.json();
-    } catch (e) {
-        return null;
+        } catch (e) {}
+        round--;
     }
+    spinner.style.display = 'none';
 }
 
-function appendRow(data) {
-    const resultsBody = document.getElementById('results-body');
+function appendHistoryRow(d) {
+    const body = document.getElementById('results-body');
     const row = document.createElement('tr');
-    row.dataset.round = data.drwNo;
+    const nums = [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6];
+    const numsHtml = nums.map(n => `<div class="number ${getBallColor(n)}" style="width:30px;height:30px;font-size:0.8rem;">${n}</div>`).join('');
+    const prize = new Intl.NumberFormat('ko-KR').format(d.firstWinamnt);
     
-    const numbers = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
-    const numsHtml = numbers.map(n => `<div class="number ${getBallColorClass(n)}">${n}</div>`).join('');
-    const bonusHtml = `<div class="number ${getBallColorClass(data.bnusNo)}">${data.bnusNo}</div>`;
-    const prize = new Intl.NumberFormat('ko-KR').format(data.firstWinamnt);
-    const sales = new Intl.NumberFormat('ko-KR').format(data.totSellamnt);
-    
-    const sum = numbers.reduce((a, b) => a + b, 0);
-    const odds = numbers.filter(n => n % 2 !== 0).length;
-    let grade = (sum >= 100 && sum <= 170 && odds >= 2 && odds <= 4) ? 
-                {l:'최적 밸런스', c:'grade-opt'} : {l:'안정적 표준', c:'grade-std'};
-
     row.innerHTML = `
-        <td><strong>${data.drwNo}회</strong></td>
-        <td><small>${data.drwNoDate}</small></td>
-        <td><div style="display:flex;align-items:center;justify-content:center;gap:5px;">
-            <div class="numbers-display">${numsHtml}</div><span style="color:#aaa;font-weight:800">+</span>
-            <div class="numbers-display">${bonusHtml}</div>
-        </div></td>
-        <td><div class="prize-info"><span class="winner-count">${data.firstPrzwnerCo}명</span><br><span class="prize-amount">${prize}원</span></div></td>
-        <td><small style="color:#888">${sales}원</small></td>
-        <td><span class="grade-badge ${grade.c}">${grade.l}</span></td>
+        <td>${d.drwNo}회</td>
+        <td><small>${d.drwNoDate}</small></td>
+        <td><div class="numbers-display" style="margin:0;gap:5px;">${numsHtml} <span style="color:#ccc">+</span> <div class="number ${getBallColor(d.bnusNo)}" style="width:30px;height:30px;font-size:0.8rem;">${d.bnusNo}</div></div></td>
+        <td><small>${d.firstPrzwnerCo}명 / ${prize}원</small></td>
+        <td><span class="grade-badge grade-opt">최적</span></td>
     `;
-    resultsBody.appendChild(row);
+    body.appendChild(row);
 }
 
-function getBallColorClass(val) {
-    if (val <= 10) return 'num-1-10'; if (val <= 20) return 'num-11-20';
-    if (val <= 30) return 'num-21-30'; if (val <= 40) return 'num-31-40';
+function getBallColor(n) {
+    if (n <= 10) return 'num-1-10'; if (n <= 20) return 'num-11-20';
+    if (n <= 30) return 'num-21-30'; if (n <= 40) return 'num-31-40';
     return 'num-41-45';
 }
 
-function runProfessionalAnalysis(numbers, type) {
-    const reportSection = document.getElementById('analysis-report');
-    if (!reportSection) return;
-    reportSection.style.display = 'block';
-    document.getElementById('current-analyzed-numbers').textContent = `${type}: ${numbers.join(', ')}`;
-    const sum = numbers.reduce((a, b) => a + b, 0);
-    const odds = numbers.filter(n => n % 2 !== 0).length;
-    const highs = numbers.filter(n => n >= 23).length;
-    let pts = 0;
-    if (sum >= 100 && sum <= 170) pts++; if (odds >= 2 && odds <= 4) pts++; if (highs >= 2 && highs <= 4) pts++;
-    
-    let grade = pts === 3 ? "최적의 통계적 밸런스" : pts === 2 ? "안정적인 표준 조합" : "도전적인 변칙 패턴";
-    let icon = pts === 3 ? "⚖️" : pts === 2 ? "✅" : "🚀";
-
-    document.getElementById('pattern-grade').textContent = grade;
-    document.getElementById('status-icon').textContent = icon;
+function runAnalysis(nums, type) {
+    const rep = document.getElementById('analysis-report');
+    rep.style.display = 'block';
+    document.getElementById('current-analyzed-numbers').textContent = `${type}: ${nums.join(', ')}`;
+    const sum = nums.reduce((a,b)=>a+b, 0);
     document.getElementById('val-sum').textContent = sum;
-    document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
-    document.getElementById('val-high-low').textContent = `${highs}:${6-highs}`; 
-    document.getElementById('val-consecutive').textContent = `분석 완료`;
-    reportSection.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('pattern-grade').textContent = (sum >= 100 && sum <= 170) ? "최적의 밸런스" : "안정적 조합";
+    rep.scrollIntoView({ behavior: 'smooth' });
 }
