@@ -16,12 +16,10 @@ function playSound(type) {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Hover Sounds
     document.querySelectorAll('button, a, input').forEach(el => {
         el.addEventListener('mouseenter', () => playSound('menuHover'));
     });
 
-    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
@@ -36,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Determine current page
     if (document.getElementById('tab-auto')) {
         initLottoTool();
     } else if (document.getElementById('results-body')) {
@@ -44,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- Lotto Tool Logic (Home Page) ---
+// --- Lotto Tool (Home Page) ---
 function initLottoTool() {
     const tabAuto = document.getElementById('tab-auto');
     const tabManual = document.getElementById('tab-manual');
@@ -124,15 +121,15 @@ function initLottoTool() {
 
 // --- Results History Page Logic ---
 let currentMaxRound = 0;
-const BASE_ROUND = 1153; // Start from 2025 Jan
+const BASE_ROUND = 1153; 
 
 async function initResultsHistory() {
     const resultsBody = document.getElementById('results-body');
     const loadingSpinner = document.getElementById('loading-spinner');
     
-    // Calculate current round
+    // Calculate current round more accurately
     const today = new Date();
-    const startDate = new Date(2025, 0, 4);
+    const startDate = new Date(2025, 0, 4); 
     const weeksDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24 * 7));
     currentMaxRound = BASE_ROUND + weeksDiff;
     
@@ -144,8 +141,10 @@ async function initResultsHistory() {
     btnLoadMore.style.display = 'inline-block';
     btnLoadMore.addEventListener('click', async () => {
         playSound('click');
+        btnLoadMore.disabled = true;
         const lastLoadedRound = parseInt(resultsBody.lastElementChild.dataset.round);
         await loadRounds(lastLoadedRound - 1, 10);
+        btnLoadMore.disabled = false;
     });
 }
 
@@ -165,12 +164,21 @@ async function loadRounds(startRound, count) {
                 
                 const numbersArr = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
                 const numsHtml = numbersArr.map(n => `<div class="number ${getBallColorClass(n)}">${n}</div>`).join('');
+                const bonusHtml = `<div class="number ${getBallColorClass(data.bnusNo)}">${data.bnusNo}</div>`;
+                
+                // Format Currency
+                const prize = new Intl.NumberFormat('ko-KR').format(data.firstWinamnt);
                 
                 row.innerHTML = `
-                    <td>${data.drwNo}회</td>
+                    <td><strong>${data.drwNo}</strong>회</td>
                     <td>${data.drwNoDate}</td>
-                    <td><div class="numbers-display">${numsHtml}</div></td>
-                    <td><div class="numbers-display"><div class="number ${getBallColorClass(data.bnusNo)}">${data.bnusNo}</div></div></td>
+                    <td class="bonus-cell">
+                        <div class="numbers-display">${numsHtml}</div>
+                        <span class="bonus-plus">+</span>
+                        <div class="numbers-display">${bonusHtml}</div>
+                    </td>
+                    <td><span class="winner-count">${data.firstPrzwnerCo}</span>명</td>
+                    <td><span class="prize-amount">${prize}</span>원</td>
                 `;
                 resultsBody.appendChild(row);
             }
@@ -195,7 +203,9 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('current-analyzed-numbers').textContent = `${type}: ${numbers.join(', ')}`;
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
+    const evens = 6 - odds;
     const highs = numbers.filter(n => n >= 23).length;
+    const lows = 6 - highs;
     let consecs = 0;
     for (let i = 0; i < numbers.length - 1; i++) if (numbers[i] + 1 === numbers[i+1]) consecs++;
     let points = 0;
@@ -212,8 +222,8 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('pattern-desc').textContent = desc;
     document.getElementById('status-icon').textContent = icon;
     document.getElementById('val-sum').textContent = sum;
-    document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
-    document.getElementById('val-high-low').textContent = `${6-highs}:${highs}`; 
+    document.getElementById('val-odd-even').textContent = `${odds}:${evens}`;
+    document.getElementById('val-high-low').textContent = `${highs}:${lows}`; 
     document.getElementById('val-consecutive').textContent = `${consecs}회`;
     reportSection.scrollIntoView({ behavior: 'smooth' });
 }
