@@ -32,6 +32,21 @@ function playSound(type) {
         gain2.connect(audioCtx.destination);
         osc2.start();
         osc2.stop(audioCtx.currentTime + 0.1);
+    } else if(type === 'celebration') {
+        // 행운을 상징하는 밝은 상승 아르페지오 사운드
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.1));
+            g.gain.setValueAtTime(0.06, audioCtx.currentTime + (i * 0.1));
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.6);
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.start(audioCtx.currentTime + (i * 0.1));
+            o.stop(audioCtx.currentTime + (i * 0.1) + 0.6);
+        });
     }
 }
 
@@ -106,6 +121,7 @@ function initLottoTool() {
             playSound('pop');
         }
 
+        playSound('celebration');
         runProfessionalAnalysis(finalNums, 'AI 추천');
         btnGen.disabled = false;
         btnGen.textContent = '번호 추출 시작 ✨';
