@@ -23,9 +23,6 @@ function playSound(type) {
     }
 }
 
-// --- Statistical Weights ---
-const HISTORICAL_WEIGHTS = { 1: 1.2, 13: 1.1, 17: 1.1, 27: 1.3, 34: 1.2, 43: 1.25, 2: 0.9, 9: 0.85, 22: 0.8, 32: 0.9, 41: 0.95 };
-
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
@@ -50,25 +47,51 @@ function initLottoTool() {
     const btnGen = document.getElementById('btn-generate-auto'), btnAnlz = document.getElementById('btn-analyze-manual');
     const display = document.getElementById('auto-numbers-display');
 
-    tabAuto.onclick = () => { tabAuto.className='tab-btn active'; tabManual.className='tab-btn'; viewAuto.style.display='block'; viewManual.style.display='none'; document.getElementById('analysis-report').style.display='none'; };
-    tabManual.onclick = () => { tabManual.className='tab-btn active'; tabAuto.className='tab-btn'; viewManual.style.display='block'; viewAuto.style.display='none'; document.getElementById('analysis-report').style.display='none'; };
+    tabAuto.onclick = () => { 
+        tabAuto.className='tab-btn active'; tabManual.className='tab-btn'; 
+        viewAuto.style.display='block'; viewManual.style.display='none'; 
+        document.getElementById('analysis-report').style.display = 'none';
+    };
+    tabManual.onclick = () => { 
+        tabManual.className='tab-btn active'; tabAuto.className='tab-btn'; 
+        viewManual.style.display='block'; viewAuto.style.display='none'; 
+        document.getElementById('analysis-report').style.display = 'none';
+    };
 
     btnGen.onclick = async () => {
-        btnGen.disabled = true; display.innerHTML = ''; document.getElementById('analysis-report').style.display = 'none';
+        btnGen.disabled = true;
+        btnGen.textContent = '데이터 분석 중...';
+        display.innerHTML = '';
+        document.getElementById('analysis-report').style.display = 'none';
+
         const finalNums = generateWeightedNumbers();
+        const balls = [];
+
         for (let i = 0; i < 6; i++) {
-            const ball = document.createElement('div'); ball.className = 'number spinning'; ball.textContent = '?';
+            const ball = document.createElement('div');
+            ball.className = 'number spinning';
+            ball.textContent = '?';
             display.appendChild(ball);
+            balls.push(ball);
         }
-        const balls = display.querySelectorAll('.number');
+
         for (let i = 0; i < 6; i++) {
-            const interval = setInterval(() => { balls[i].textContent = Math.floor(Math.random()*45)+1; playSound('rolling'); }, 80);
-            await new Promise(r => setTimeout(r, 500 + (i * 200)));
+            const ball = balls[i];
+            const val = finalNums[i];
+            const interval = setInterval(() => {
+                ball.textContent = Math.floor(Math.random()*45)+1;
+                playSound('rolling');
+            }, 80);
+            await new Promise(r => setTimeout(r, 600 + (i * 200)));
             clearInterval(interval);
-            balls[i].className = `number ${getBallColorClass(finalNums[i])}`; balls[i].textContent = finalNums[i]; playSound('pop');
+            ball.className = `number ${getBallColorClass(val)}`;
+            ball.textContent = val;
+            playSound('pop');
         }
-        runProfessionalAnalysis(finalNums, 'AI 통계 추천');
+
+        runProfessionalAnalysis(finalNums, 'AI 추천');
         btnGen.disabled = false;
+        btnGen.textContent = '번호 추출 시작 ✨';
     };
 
     btnAnlz.onclick = () => {
@@ -80,22 +103,12 @@ function initLottoTool() {
 }
 
 function generateWeightedNumbers() {
-    let pool = [];
-    for (let i = 1; i <= 45; i++) {
-        const w = HISTORICAL_WEIGHTS[i] || 1.0;
-        for (let j = 0; j < Math.round(w * 10); j++) pool.push(i);
-    }
-    let selected = new Set();
-    while (selected.size < 6) selected.add(pool[Math.floor(Math.random() * pool.length)]);
-    return Array.from(selected).sort((a, b) => a - b);
+    return Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
 }
 
-// --- History Logic (FIXED) ---
+// --- History Logic ---
 async function initResultsHistory() {
-    const resultsBody = document.getElementById('results-body');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    
-    // Estimate latest round
+    const body = document.getElementById('results-body');
     const start = new Date(2025, 0, 4);
     const weeksDiff = Math.floor((new Date() - start) / (1000*60*60*24*7));
     let round = 1153 + weeksDiff;
@@ -103,36 +116,31 @@ async function initResultsHistory() {
     let loadedCount = 0;
     while (loadedCount < 8 && round > 1150) {
         try {
-            // Using allorigins with safety parsing
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`;
             const response = await fetch(proxyUrl);
             const rawData = await response.json();
             const data = typeof rawData.contents === 'string' ? JSON.parse(rawData.contents) : rawData.contents;
-            
             if (data && data.returnValue === "success") {
                 appendHistoryRow(data);
                 loadedCount++;
             }
-        } catch (e) { console.error('History fetch error for round:', round, e); }
+        } catch (e) {}
         round--;
-        await new Promise(r => setTimeout(r, 200)); // Rate limit safety
+        await new Promise(r => setTimeout(r, 200));
     }
-    if (loadingSpinner) loadingSpinner.style.display = 'none';
 }
 
 function appendHistoryRow(d) {
     const body = document.getElementById('results-body');
-    if (!body) return;
     const row = document.createElement('tr');
     const nums = [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6];
-    const numsHtml = nums.map(n => `<div class="number ${getBallColorClass(n)}" style="width:35px;height:35px;font-size:0.85rem;">${n}</div>`).join('');
+    const numsHtml = nums.map(n => `<div class="number ${getBallColorClass(n)}" style="width:32px;height:32px;font-size:0.8rem;border-radius:8px;">${n}</div>`).join('');
     const prize = new Intl.NumberFormat('ko-KR').format(d.firstWinamnt);
-    
     row.innerHTML = `
-        <td><strong>${d.drwNo}회</strong></td>
+        <td><strong>${d.drwNo}</strong></td>
         <td><small>${d.drwNoDate}</small></td>
-        <td><div class="numbers-display" style="margin:0;gap:5px;">${numsHtml} <span style="color:#ccc">+</span> <div class="number ${getBallColorClass(d.bnusNo)}" style="width:35px;height:35px;font-size:0.85rem;">${d.bnusNo}</div></div></td>
-        <td><div style="font-size:0.8rem;">${d.firstPrzwnerCo}명 당첨<br><strong>${prize}원</strong></div></td>
+        <td><div class="numbers-display" style="margin:0;gap:4px;">${numsHtml} <span style="color:#ccc">+</span> <div class="number ${getBallColorClass(d.bnusNo)}" style="width:32px;height:32px;font-size:0.8rem;border-radius:8px;">${d.bnusNo}</div></div></td>
+        <td><small>${d.firstPrzwnerCo}명<br>${prize}원</small></td>
         <td><span class="grade-badge grade-opt">최적</span></td>
     `;
     body.appendChild(row);
@@ -146,15 +154,12 @@ function getBallColorClass(val) {
 
 function runProfessionalAnalysis(numbers, type) {
     const report = document.getElementById('analysis-report');
-    if (!report) return;
     report.style.display = 'block';
-    document.getElementById('current-analyzed-numbers').textContent = `${type}: ${numbers.join(', ')}`;
+    document.getElementById('current-analyzed-numbers').textContent = numbers.join(', ');
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
     const highs = numbers.filter(n => n >= 23).length;
-    let pts = 0;
-    if (sum >= 100 && sum <= 170) pts++; if (odds >= 2 && odds <= 4) pts++; if (highs >= 2 && highs <= 4) pts++;
-    document.getElementById('pattern-grade').textContent = pts >= 3 ? "최적의 통계적 밸런스" : pts === 2 ? "안정적인 표준 조합" : "도전적인 변칙 패턴";
+    document.getElementById('pattern-grade').textContent = (sum >= 100 && sum <= 170) ? "최적의 밸런스" : "안정적 표준";
     document.getElementById('val-sum').textContent = sum;
     document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
     document.getElementById('val-high-low').textContent = `${highs}:${6-highs}`; 

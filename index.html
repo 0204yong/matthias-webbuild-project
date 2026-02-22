@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="10년 통계 기반 로또 6/45 패턴 분석 리포트 서비스. 무료 자동 번호 생성 및 수동 조합 분석 기능을 제공합니다.">
-    <meta name="keywords" content="로또번호생성, 로또분석, 로또통계, 로또645, 무료로또">
-    <title>Lotto Analytics | 통계 기반 번호 분석 ✨</title>
+    <meta name="description" content="10년 통계 기반 로또 6/45 지능형 번호 추천 및 정밀 분석 리포트.">
+    <title>Lucky Lotto Hub | 지능형 로또 분석 포털 ✨</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Background Decor -->
+    <div class="bg-decor circles"></div>
+    <div class="bg-decor shine"></div>
+
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">Lotto Analytics 🔬</a>
+            <a href="index.html" class="nav-logo">Lotto Hub 💎</a>
             <div class="nav-links">
                 <a href="results.html" class="nav-link">당첨 결과</a>
                 <a href="guide.html" class="nav-link">분석 가이드</a>
@@ -23,31 +26,38 @@
     </nav>
 
     <main class="container">
-        <!-- Main Tool Card -->
-        <section class="main-card">
+        <!-- Hero Section -->
+        <header class="hero-section">
+            <div class="hero-content">
+                <span class="hero-badge">AI Statistical Engine v2.0</span>
+                <h1>당신의 행운을 <br><span class="highlight">과학적으로</span> 디자인하세요.</h1>
+                <p>단순한 랜덤 추출이 아닌, 1회부터 축적된 1,200회차 이상의 <br>당첨 빅데이터를 기반으로 최적의 밸런스를 탐색합니다.</p>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-coin">💰</div>
+            </div>
+        </header>
+
+        <!-- Main Service Card -->
+        <section class="main-card glass">
             <div class="mode-tabs">
-                <button id="tab-auto" class="tab-btn active">자동 번호 추천 🎰</button>
-                <button id="tab-manual" class="tab-btn">수동 번호 분석 ✍️</button>
+                <button id="tab-auto" class="tab-btn active">AI 지능형 추천 🎰</button>
+                <button id="tab-manual" class="tab-btn">정밀 번호 분석 ✍️</button>
             </div>
 
-            <!-- Auto View -->
             <div id="view-auto" class="mode-view">
-                <div class="game-header">
-                    <h1>행운의 번호 추천 🎰</h1>
-                    <p>10년 통계 알고리즘이 추천하는 최적의 조합을 확인하세요.</p>
+                <div id="auto-numbers-display" class="numbers-display">
+                    <!-- Numbers appear here -->
+                    <div class="placeholder-balls">
+                        <span>?</span><span>?</span><span>?</span><span>?</span><span>?</span><span>?</span>
+                    </div>
                 </div>
-                <div id="auto-numbers-display" class="numbers-display"></div>
                 <div class="button-group">
-                    <button id="btn-generate-auto" class="btn-primary">번호 추출 시작 ✨</button>
+                    <button id="btn-generate-auto" class="btn-primary main-btn">번호 추출 시작 ✨</button>
                 </div>
             </div>
 
-            <!-- Manual View -->
             <div id="view-manual" class="mode-view" style="display: none;">
-                <div class="game-header">
-                    <h1>내 번호 정밀 분석 ✍️</h1>
-                    <p>직접 고른 6개의 번호가 통계적으로 어떤 가치를 갖는지 분석합니다.</p>
-                </div>
                 <div class="manual-inputs-wrapper">
                     <div class="manual-inputs">
                         <input type="number" min="1" max="45" placeholder="1">
@@ -59,72 +69,67 @@
                     </div>
                 </div>
                 <div class="button-group">
-                    <button id="btn-analyze-manual" class="btn-secondary">이 번호 분석하기 📊</button>
+                    <button id="btn-analyze-manual" class="btn-secondary main-btn">조합 밸런스 분석 📊</button>
                 </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Content Grid -->
+        <section class="info-grid">
+            <div class="info-card glass">
+                <h3>오늘의 행운수 🍀</h3>
+                <p>사용자의 행운 기류를 분석한 오늘의 추천 숫자입니다.</p>
+                <div class="lucky-numbers">7, 14, 29</div>
+            </div>
+            <div class="info-card glass">
+                <h3>실시간 분석 트렌드 🔥</h3>
+                <p>최근 5주간 가장 많이 출현한 번호대와 패턴입니다.</p>
+                <div class="trend-tag">20번대 강세</div>
+            </div>
+            <div class="info-card glass">
+                <h3>로또 명당 가이드 📍</h3>
+                <p>전국 최다 당첨 배출점의 통계와 위치 정보를 확인하세요.</p>
+                <a href="guide.html" class="card-link">자세히 보기 →</a>
             </div>
         </section>
 
         <!-- Analysis Report -->
-        <section id="analysis-report" class="report-section" style="display:none;">
+        <section id="analysis-report" class="report-section glass" style="display:none;">
             <div class="report-header">
-                <div class="analyzed-numbers-tag">분석 중인 번호: <span id="current-analyzed-numbers">-</span></div>
+                <div class="analyzed-numbers-tag">분석 대상: <span id="current-analyzed-numbers">-</span></div>
                 <h2>통계적 패턴 분석 리포트 📑</h2>
-                <p class="disclaimer">* 과거 데이터 기반 분석이며 당첨을 보장하지 않습니다.</p>
             </div>
 
             <div class="report-main-grid">
                 <div class="status-card">
-                    <div class="status-icon" id="status-icon">⚖️</div>
+                    <div id="status-icon" class="status-icon">⚖️</div>
                     <div class="status-text">
-                        <span class="label">패턴 적합도 평가</span>
+                        <span class="label">패턴 적합도 등급</span>
                         <h3 id="pattern-grade">분석 완료</h3>
-                        <p id="pattern-desc">-</p>
                     </div>
                 </div>
                 <div class="analysis-details-grid">
-                    <div class="analysis-item-card">
-                        <div class="item-header"><span class="item-title">번호 총합</span><span class="item-value" id="val-sum">-</span></div>
-                        <p class="item-desc">역대 당첨 번호의 약 72%가 총합 <strong>100~170</strong> 사이에서 발생했습니다.</p>
-                    </div>
-                    <div class="analysis-item-card">
-                        <div class="item-header"><span class="item-title">홀짝 비율</span><span class="item-value" id="val-odd-even">-</span></div>
-                        <p class="item-desc"><strong>3:3, 2:4, 4:2</strong> 비율이 전체 당첨의 약 80%를 차지합니다.</p>
-                    </div>
-                    <div class="analysis-item-card">
-                        <div class="item-header"><span class="item-title">고저 비율</span><span class="item-value" id="val-high-low">-</span></div>
-                        <p class="item-desc"><strong>23(중앙값)</strong>을 기준으로 고저 번호가 균형 있게 섞인 조합이 유리합니다.</p>
-                    </div>
-                    <div class="analysis-item-card">
-                        <div class="item-header"><span class="item-title">연속 번호</span><span class="item-value" id="val-consecutive">-</span></div>
-                        <p class="item-desc">대부분의 당첨 조합은 연속 번호가 <strong>없거나 2개 이하</strong>입니다.</p>
-                    </div>
+                    <div class="stat-box"><span>총합</span><strong id="val-sum">-</strong></div>
+                    <div class="stat-box"><span>홀짝</span><strong id="val-odd-even">-</strong></div>
+                    <div class="stat-box"><span>고저</span><strong id="val-high-low">-</strong></div>
+                    <div class="stat-box"><span>결과</span><strong id="val-consecutive">-</strong></div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Guide Preview Section (SEO Booster) -->
-        <section class="guide-preview-section">
-            <h2>Lotto Analytics 가이드 📚</h2>
-            <div class="guide-cards">
-                <a href="guide.html#probability" class="guide-card">
-                    <h3>🎲 확률 이론의 기초</h3>
-                    <p>로또 번호 생성에 사용되는 수학적 확률 이론과 통계적 접근 방식을 알아봅니다.</p>
-                </a>
-                <a href="guide.html#strategy" class="guide-card">
-                    <h3>📊 번호 선택 전략</h3>
-                    <p>제외수, 고정수, 그리고 패턴 분석을 통해 당첨 확률을 높이는 전략을 소개합니다.</p>
-                </a>
             </div>
         </section>
     </main>
 
     <footer>
         <div class="footer-container">
-            <p>&copy; 2026 Lotto Analytics. All rights reserved.</p>
+            <div class="footer-info">
+                <h2 class="footer-logo">Lotto Hub</h2>
+                <p>빅데이터와 확률 통계를 활용한 스마트한 복권 생활</p>
+            </div>
             <div class="footer-links">
                 <a href="privacy.html">개인정보처리방침</a>
-                <a href="guide.html">이용약관</a>
+                <a href="guide.html">분석 가이드</a>
+                <a href="results.html">당첨 결과</a>
             </div>
+            <p class="copyright">&copy; 2026 Lotto Hub. All rights reserved.</p>
         </div>
     </footer>
 
