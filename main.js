@@ -16,36 +16,29 @@ function playSound(type) {
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + 0.05);
     } else if(type === 'rolling') {
-        // 로또 공이 굴러가는 소리 강화 (볼륨 및 질감 개선)
+        // 묵직한 베이스 드럼 느낌의 저주파 타격음
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
-        
-        osc2.type = 'triangle'; // 사인파보다 조금 더 질감이 느껴지는 삼각파 사용
-        const randomFreq = 100 + Math.random() * 150; 
-        osc2.frequency.setValueAtTime(randomFreq, audioCtx.currentTime);
-        osc2.frequency.exponentialRampToValueAtTime(randomFreq * 0.5, audioCtx.currentTime + 0.1);
-        
-        gain2.gain.setValueAtTime(0.05, audioCtx.currentTime); // 볼륨 증가
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(60, audioCtx.currentTime); // 아주 낮은 주파수 (Bass)
+        osc2.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
+        gain2.gain.setValueAtTime(0.15, audioCtx.currentTime); // 타격감 있는 볼륨
         gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-        
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start();
-        osc2.stop(audioCtx.currentTime + 0.1);
+        osc2.connect(gain2); gain2.connect(audioCtx.destination);
+        osc2.start(); osc2.stop(audioCtx.currentTime + 0.1);
     } else if(type === 'celebration') {
-        // 행운을 상징하는 밝은 상승 아르페지오 사운드
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        // 피날레 음량 대폭 강화
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, i) => {
             const o = audioCtx.createOscillator();
             const g = audioCtx.createGain();
             o.type = 'sine';
             o.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.1));
-            g.gain.setValueAtTime(0.06, audioCtx.currentTime + (i * 0.1));
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.6);
-            o.connect(g);
-            g.connect(audioCtx.destination);
+            g.gain.setValueAtTime(0.2, audioCtx.currentTime + (i * 0.1)); // 볼륨 3배 이상 강화
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.8);
+            o.connect(g); g.connect(audioCtx.destination);
             o.start(audioCtx.currentTime + (i * 0.1));
-            o.stop(audioCtx.currentTime + (i * 0.1) + 0.6);
+            o.stop(audioCtx.currentTime + (i * 0.1) + 0.8);
         });
     }
 }
@@ -113,10 +106,10 @@ function initLottoTool() {
             const interval = setInterval(() => {
                 ball.textContent = Math.floor(Math.random()*45)+1;
                 playSound('rolling');
-            }, 100); // 롤링 주기 약간 완화 (80ms -> 100ms)
+            }, 150); // 롤링 소리를 묵직한 리듬으로 (100ms -> 150ms)
 
-            // 추출 속도를 훨씬 여유 있게 조정 (간격을 200ms에서 500ms로 확대)
-            await new Promise(r => setTimeout(r, 800 + (i * 500)));
+            // 추출 속도를 조금 더 빠르게 조정 (500ms -> 300ms)
+            await new Promise(r => setTimeout(r, 400 + (i * 300)));
             clearInterval(interval);
             
             ball.className = `number ${getBallColorClass(val)}`;
