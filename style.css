@@ -22,12 +22,14 @@ body.dark-mode {
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { 
     font-family: 'Pretendard', sans-serif; 
+    background-color: #f5f7fa; /* 이미지 로딩 전/실패 시 보여줄 배경색 */
     background-image: url('https://i.imgur.com/7p3PGpA.png');
     background-size: cover;
+    background-position: center center; /* 이미지를 중앙에 배치 */
     background-repeat: no-repeat;
     background-attachment: fixed;
     color: var(--text-primary); 
-    transition: all 0.5s; 
+    transition: background-color 0.5s, color 0.3s; 
     overflow-x: hidden; 
     line-height: 1.6; 
 }
