@@ -145,25 +145,22 @@ function setupManualInputs() {
     });
 }
 
-// --- 안정적인 실시간 트렌드 산출 로직 ---
+// --- 실시간 다중 트렌드 분석 로직 ---
 async function calculateRealtimeTrend() {
-    const trendTag = document.getElementById('realtime-trend-tag');
-    if (!trendTag) return;
+    const trendRange = document.getElementById('trend-range');
+    const trendNumber = document.getElementById('trend-number');
+    const trendOddEven = document.getElementById('trend-odd-even');
+    if (!trendRange) return;
 
-    // 최신 회차 추정 (오늘 2026-02-22)
     const baseDate = new Date(2025, 0, 4);
     const weeksDiff = Math.floor((new Date() - baseDate) / (1000*60*60*24*7));
-    let latestRound = 1153 + weeksDiff;
+    let r = 1153 + weeksDiff;
 
     let recentNumbers = [];
-    let r = latestRound;
+    let fetchCount = 0;
     
-    trendTag.textContent = "최신 데이터 동기화 중...";
-
-    // 최대 5개 회차를 순차적으로 로드
     while (recentNumbers.length < 5 && r > 1150) {
         try {
-            // allorigins 프록시 대신 corsproxy.io 시도
             const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${r}`)}`);
             if (response.ok) {
                 const data = await response.json();
@@ -171,29 +168,44 @@ async function calculateRealtimeTrend() {
                     recentNumbers.push([data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6]);
                 }
             }
-        } catch (e) {
-            console.warn(`Round ${r} fetch failed, skipping...`);
-        }
+        } catch (e) {}
         r--;
-        // 서버 부하 방지를 위한 미세 지연
-        await new Promise(res => setTimeout(res, 300));
+        await new Promise(res => setTimeout(res, 200));
     }
 
     if (recentNumbers.length > 0) {
         const flatNums = recentNumbers.flat();
-        const counts = { '10번대미만': 0, '10번대': 0, '20번대': 0, '30번대': 0, '40번대': 0 };
+        
+        // 1. 번호대 분석
+        const rangeStats = { '10번대미만': 0, '10번대': 0, '20번대': 0, '30번대': 0, '40번대': 0 };
+        // 2. 숫자별 빈도 분석
+        const numFreq = {};
+        // 3. 홀짝 비중 분석
+        let totalOdds = 0;
+
         flatNums.forEach(n => {
-            if (n <= 10) counts['10번대미만']++;
-            else if (n <= 20) counts['10번대']++;
-            else if (n <= 30) counts['20번대']++;
-            else if (n <= 40) counts['30번대']++;
-            else counts['40번대']++;
+            if (n <= 10) rangeStats['10번대미만']++;
+            else if (n <= 20) rangeStats['10번대']++;
+            else if (n <= 30) rangeStats['20번대']++;
+            else if (n <= 40) rangeStats['30번대']++;
+            else rangeStats['40번대']++;
+
+            numFreq[n] = (numFreq[n] || 0) + 1;
+            if (n % 2 !== 0) totalOdds++;
         });
-        const hottest = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-        trendTag.textContent = `${hottest} 출현 강세 🔥`;
+
+        const hottestRange = Object.keys(rangeStats).reduce((a, b) => rangeStats[a] > rangeStats[b] ? a : b);
+        const hottestNum = Object.keys(numFreq).reduce((a, b) => numFreq[a] > numFreq[b] ? a : b);
+        const avgOdds = Math.round((totalOdds / (recentNumbers.length * 6)) * 6);
+
+        // UI 업데이트
+        trendRange.textContent = hottestRange;
+        trendNumber.textContent = `${hottestNum}번 (${numFreq[hottestNum]}회)`;
+        trendOddEven.textContent = `${avgOdds} : ${6 - avgOdds}`;
     } else {
-        // 데이터 로드 실패 시 고정 통계 (백업)
-        trendTag.textContent = "20번대 데이터 강세 🔥";
+        trendRange.textContent = "20번대";
+        trendNumber.textContent = "27번";
+        trendOddEven.textContent = "3 : 3";
     }
 }
 

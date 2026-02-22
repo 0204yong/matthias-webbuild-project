@@ -87,7 +87,13 @@ body.dark-mode .tab-btn.active { background: #2d3436; }
 .info-card { padding: 2rem; }
 .info-card h3 { margin-bottom: 1rem; color: var(--primary); font-size: 1.3rem; }
 .lucky-numbers { font-size: 1.8rem; font-weight: 900; color: var(--accent); margin-top: 1rem; }
-.trend-tag { display: inline-block; padding: 8px 16px; background: rgba(255, 118, 117, 0.1); color: #ff7675; border-radius: 10px; font-weight: 800; margin-top: 1rem; }
+
+/* Expanded Trend List */
+.trend-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 12px; }
+.trend-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+.trend-item span { font-size: 0.85rem; color: var(--text-sub); font-weight: 700; }
+.trend-item strong { font-size: 1rem; color: #ff7675; font-weight: 800; }
+
 .card-link { color: var(--primary); text-decoration: none; font-weight: 800; display: inline-block; margin-top: 1.5rem; }
 
 /* Buttons */
