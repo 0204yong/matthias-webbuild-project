@@ -16,10 +16,23 @@ function playSound(type) {
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + 0.05);
     } else if(type === 'rolling') {
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+        // 로또 공이 굴러가는 듯한 부드러운 '달그락' 소리
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        
+        osc2.type = 'sine';
+        // 미세한 랜덤 주파수로 공들이 섞이는 느낌 재현
+        const randomFreq = 150 + Math.random() * 100; 
+        osc2.frequency.setValueAtTime(randomFreq, audioCtx.currentTime);
+        osc2.frequency.exponentialRampToValueAtTime(randomFreq * 0.8, audioCtx.currentTime + 0.05);
+        
+        gain2.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+        
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start();
+        osc2.stop(audioCtx.currentTime + 0.05);
     }
 }
 
