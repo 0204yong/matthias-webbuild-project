@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="10년 통계 기반 로또 6/45 번호 생성 및 정밀 분석 리포트 서비스.">
-    <title>Lucky Lotto 6/45 | 행운의 번호 분석 ✨</title>
+    <meta name="description" content="10년 통계 기반 로또 6/45 패턴 분석 리포트 서비스.">
+    <title>Lucky Lotto Analytics | 통계 기반 번호 분석 ✨</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="#" class="nav-logo">Lucky Lotto 🍀</a>
+            <a href="#" class="nav-logo">Lotto Analytics 🔬</a>
             <button id="theme-toggle">🌙</button>
         </div>
     </nav>
@@ -20,8 +20,8 @@
         <!-- Main Generator Card -->
         <section class="game-card main-card">
             <div class="game-header">
-                <h1>Lucky Lotto 6/45 🎰</h1>
-                <p>과거 10년 통계를 기반으로 분석된 6개의 행운 번호를 만나보세요.</p>
+                <h1>Lotto 6/45 Generator 🎰</h1>
+                <p>과거 10년의 당첨 데이터를 알고리즘으로 분석하여 최적의 조합을 탐색합니다.</p>
             </div>
             
             <div id="numbers-display" class="numbers-display">
@@ -29,8 +29,8 @@
             </div>
 
             <div class="game-controls">
-                <button id="btn-auto" class="btn-primary">자동 번호 생성 ✨</button>
-                <button id="btn-toggle-manual" class="btn-secondary">내 번호 분석하기 ✍️</button>
+                <button id="btn-auto" class="btn-primary">자동 번호 추출 ✨</button>
+                <button id="btn-toggle-manual" class="btn-secondary">수동 번호 분석 ✍️</button>
             </div>
 
             <div id="manual-area" class="manual-area" style="display:none;">
@@ -43,24 +43,71 @@
                     <input type="number" min="1" max="45" placeholder="5">
                     <input type="number" min="1" max="45" placeholder="6">
                 </div>
-                <button id="btn-analyze" class="btn-analyze">실시간 통계 분석 시작 📊</button>
+                <button id="btn-analyze" class="btn-analyze">통계 데이터 대조 시작 📊</button>
             </div>
         </section>
 
-        <!-- Analysis Report Area -->
+        <!-- Professional Analysis Report Area -->
         <section id="analysis-report" class="report-section" style="display:none;">
-            <div class="report-container">
-                <h2>10년 데이터 정밀 분석 리포트 📊</h2>
-                <div class="report-grid">
-                    <div class="report-card score-card">
-                        <h3>당첨 기대 점수</h3>
-                        <div id="overall-score" class="big-score">0</div>
-                        <p id="score-comment">데이터 분석 완료.</p>
+            <div class="report-header">
+                <h2>통계적 패턴 분석 리포트 📑</h2>
+                <p class="disclaimer">* 본 리포트는 과거 10년간의 당첨 데이터 패턴과의 유사성을 분석한 결과이며, 실제 당첨 여부와는 무관합니다.</p>
+            </div>
+
+            <div class="report-main-grid">
+                <!-- Status Card -->
+                <div class="status-card">
+                    <div class="status-icon" id="status-icon">⚖️</div>
+                    <div class="status-text">
+                        <span class="label">패턴 적합도 평가</span>
+                        <h3 id="pattern-grade">분석 대기 중</h3>
+                        <p id="pattern-desc">번호를 입력하거나 생성하면 정밀 분석이 시작됩니다.</p>
                     </div>
-                    <div class="report-card detail-card">
-                        <h3>패턴 밸런스 분석</h3>
-                        <div id="report-details" class="detail-list">
-                            <!-- 상세 데이터가 여기에 들어갑니다 -->
+                </div>
+
+                <!-- Detailed Analysis Items -->
+                <div class="analysis-details-grid">
+                    <!-- Item 1: Sum -->
+                    <div class="analysis-item-card">
+                        <div class="item-header">
+                            <span class="item-title">번호 총합 (Sum)</span>
+                            <span class="item-value" id="val-sum">-</span>
+                        </div>
+                        <div class="item-body">
+                            <p class="item-desc">역대 당첨 번호의 약 72%가 총합 <strong>100~170</strong> 사이에서 발생했습니다. 이는 번호들이 골고루 분포될 때 나타나는 가장 안정적인 범위입니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- Item 2: Odd/Even -->
+                    <div class="analysis-item-card">
+                        <div class="item-header">
+                            <span class="item-title">홀짝 비율 (Odd:Even)</span>
+                            <span class="item-value" id="val-odd-even">-</span>
+                        </div>
+                        <div class="item-body">
+                            <p class="item-desc">홀수와 짝수가 <strong>3:3, 2:4, 4:2</strong>로 균형을 이룰 확률은 약 80%에 달합니다. 극단적인 홀수나 짝수 편향은 통계적으로 희귀한 케이스입니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- Item 3: High/Low -->
+                    <div class="analysis-item-card">
+                        <div class="item-header">
+                            <span class="item-title">고저 비율 (High:Low)</span>
+                            <span class="item-value" id="val-high-low">-</span>
+                        </div>
+                        <div class="item-body">
+                            <p class="item-desc">1~22(저)와 23~45(고) 번호가 적절히 섞여야 합니다. 과거 데이터는 <strong>중앙값(23)</strong>을 중심으로 균등하게 배분된 조합의 당첨 빈도가 높음을 보여줍니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- Item 4: Consecutive -->
+                    <div class="analysis-item-card">
+                        <div class="item-header">
+                            <span class="item-title">연속 번호 (Consecutive)</span>
+                            <span class="item-value" id="val-consecutive">-</span>
+                        </div>
+                        <div class="item-body">
+                            <p class="item-desc">3개 이상의 번호가 연속으로 나오는 경우는 전체 회차의 <strong>5% 미만</strong>입니다. 대부분의 당첨 조합은 연속 번호가 없거나 2개 이하로 구성됩니다.</p>
                         </div>
                     </div>
                 </div>

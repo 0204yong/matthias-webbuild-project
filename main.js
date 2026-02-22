@@ -21,9 +21,15 @@ const btnAnalyze = document.getElementById('btn-analyze');
 const display = document.getElementById('numbers-display');
 const manualArea = document.getElementById('manual-area');
 const reportSection = document.getElementById('analysis-report');
-const overallScore = document.getElementById('overall-score');
-const scoreComment = document.getElementById('score-comment');
-const reportDetails = document.getElementById('report-details');
+
+// Report Details
+const patternGrade = document.getElementById('pattern-grade');
+const patternDesc = document.getElementById('pattern-desc');
+const statusIcon = document.getElementById('status-icon');
+const valSum = document.getElementById('val-sum');
+const valOddEven = document.getElementById('val-odd-even');
+const valHighLow = document.getElementById('val-high-low');
+const valConsecutive = document.getElementById('val-consecutive');
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,7 +48,7 @@ btnToggleManual.addEventListener('click', () => {
 btnAuto.addEventListener('click', async () => {
     playSound('click');
     btnAuto.disabled = true;
-    btnAuto.textContent = '추출 중... 🎰';
+    btnAuto.textContent = '분석 조합 추출 중... 🎰';
     display.innerHTML = '';
     
     const finalNumbers = Array.from({length: 45}, (_, i) => i + 1)
@@ -63,35 +69,30 @@ btnAuto.addEventListener('click', async () => {
         const ball = balls[i];
         const val = finalNumbers[i];
         const duration = 500 + (i * 200);
-        
         const interval = setInterval(() => {
             ball.textContent = Math.floor(Math.random()*45)+1;
             playSound('rolling');
         }, 80);
-
         await new Promise(r => setTimeout(r, duration));
         clearInterval(interval);
-        
         ball.className = `number ${getBallColorClass(val)}`;
         ball.textContent = val;
         playSound('pop');
     }
 
-    runAnalysis(finalNumbers);
+    runProfessionalAnalysis(finalNumbers);
     btnAuto.disabled = false;
-    btnAuto.textContent = '자동 번호 생성 ✨';
+    btnAuto.textContent = '자동 번호 추출 ✨';
 });
 
 btnAnalyze.addEventListener('click', () => {
     playSound('click');
     const inputs = document.querySelectorAll('.manual-inputs input');
     const numbers = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
-    
     if (numbers.length < 6) { alert('6개의 번호를 모두 입력해주세요!'); return; }
     if (new Set(numbers).size !== 6) { alert('중복된 번호가 있습니다!'); return; }
     if (numbers.some(n => n < 1 || n > 45)) { alert('1~45 사이의 숫자만 입력 가능합니다!'); return; }
-
-    runAnalysis(numbers.sort((a,b)=>a-b));
+    runProfessionalAnalysis(numbers.sort((a,b)=>a-b));
 });
 
 function getBallColorClass(val) {
@@ -102,40 +103,56 @@ function getBallColorClass(val) {
     return 'num-41-45';
 }
 
-function runAnalysis(numbers) {
+function runProfessionalAnalysis(numbers) {
     reportSection.style.display = 'block';
     
+    // Core Calculations
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
+    const evens = 6 - odds;
     const highs = numbers.filter(n => n >= 23).length;
+    const lows = 6 - highs;
     let consecs = 0;
     for (let i = 0; i < numbers.length - 1; i++) if (numbers[i] + 1 === numbers[i+1]) consecs++;
 
-    let score = 0;
-    if (sum >= 100 && sum <= 170) score += 40; else if (sum >= 80 && sum <= 200) score += 20;
-    if (odds >= 2 && odds <= 4) score += 30;
-    if (highs >= 2 && highs <= 4) score += 20;
-    if (consecs <= 1) score += 10;
+    // Pattern Matching Logic (Qualitative)
+    let stabilityPoints = 0;
+    if (sum >= 100 && sum <= 170) stabilityPoints++;
+    if (odds >= 2 && odds <= 4) stabilityPoints++;
+    if (highs >= 2 && highs <= 4) stabilityPoints++;
+    if (consecs <= 1) stabilityPoints++;
 
-    animateScore(score);
+    // Grade Mapping
+    let grade, desc, icon;
+    if (stabilityPoints === 4) {
+        grade = "최적의 통계적 밸런스";
+        desc = "모든 통계 지표가 역대 당첨 데이터의 최빈값 범위에 속하는 매우 안정적인 조합입니다.";
+        icon = "⚖️";
+    } else if (stabilityPoints === 3) {
+        grade = "안정적인 표준 조합";
+        desc = "대부분의 지표가 표준 분포 내에 있으며, 균형 잡힌 확률적 구성을 보여줍니다.";
+        icon = "✅";
+    } else if (stabilityPoints === 2) {
+        grade = "도전적인 실험적 패턴";
+        desc = "일부 지표가 희귀 패턴을 포함하고 있습니다. 평범하지 않은 당첨 회차를 기대하는 조합입니다.";
+        icon = "🚀";
+    } else {
+        grade = "희귀한 변칙적 패턴";
+        desc = "통계적으로 출현 빈도가 낮은 극단적인 구성입니다. 매우 드문 케이스의 당첨 패턴에 해당합니다.";
+        icon = "🌋";
+    }
+
+    // Update UI
+    patternGrade.textContent = grade;
+    patternDesc.textContent = desc;
+    statusIcon.textContent = icon;
     
-    reportDetails.innerHTML = `
-        <div class="detail-item"><span>번호 총합</span><strong>${sum}</strong></div>
-        <div class="detail-item"><span>홀짝 비율</span><strong>${odds}:${6-odds}</strong></div>
-        <div class="detail-item"><span>고저 비율</span><strong>${6-highs}:${highs}</strong></div>
-        <div class="detail-item"><span>연속 번호</span><strong>${consecs}회</strong></div>
-    `;
+    valSum.textContent = sum;
+    valOddEven.textContent = `${odds}:${evens}`;
+    valHighLow.textContent = `${highs}:${lows}`;
+    valConsecutive.textContent = `${consecs}회`;
     
-    scoreComment.textContent = score >= 80 ? "🚀 10년 데이터상 강력한 당첨 패턴입니다!" : "⚖️ 균형 잡힌 데이터 분포입니다.";
     reportSection.scrollIntoView({ behavior: 'smooth' });
-}
-
-function animateScore(target) {
-    let current = 0;
-    const interval = setInterval(() => {
-        if (current >= target) { clearInterval(interval); overallScore.textContent = target; }
-        else { current++; overallScore.textContent = current; }
-    }, 20);
 }
 
 // Theme
