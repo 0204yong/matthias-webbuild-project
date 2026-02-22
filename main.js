@@ -14,46 +14,44 @@ function playSound(type) {
     osc.start(); osc.stop(audioCtx.currentTime + 0.06);
 }
 
-// --- Interaction Helpers ---
+// --- DOM Elements ---
+const btnAuto = document.getElementById('btn-auto');
+const btnToggleManual = document.getElementById('btn-toggle-manual');
+const btnAnalyze = document.getElementById('btn-analyze');
+const display = document.getElementById('numbers-display');
+const manualArea = document.getElementById('manual-area');
+const reportSection = document.getElementById('analysis-report');
+const overallScore = document.getElementById('overall-score');
+const scoreComment = document.getElementById('score-comment');
+const reportDetails = document.getElementById('report-details');
+
+// --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Basic Hover sounds
-    document.querySelectorAll('a, button').forEach(el => {
+    document.querySelectorAll('button, a, input').forEach(el => {
         el.addEventListener('mouseenter', () => playSound('menuHover'));
     });
 });
 
-// --- Game Logic ---
-const GAMES = {
-    lotto: {
-        inputs: 6, placeholders: ["1", "2", "3", "4", "5", "6"],
-        generate: () => Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b)
-    },
-    pension: {
-        inputs: 7, placeholders: ["조", "10만", "만", "천", "백", "십", "일"],
-        generate: () => [Math.floor(Math.random()*5)+1, ...Array.from({length: 6}, () => Math.floor(Math.random()*10))]
-    },
-    powerball: {
-        inputs: 6, placeholders: ["1", "2", "3", "4", "5", "P"],
-        generate: () => {
-            const general = Array.from({length: 28}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 5).sort((a,b)=>a-b);
-            return [...general, Math.floor(Math.random()*10)];
-        }
-    }
-};
-
-// --- Core Handlers ---
-
-async function handleAuto(gameId) {
+// --- Logic ---
+btnToggleManual.addEventListener('click', () => {
     playSound('click');
-    const display = document.getElementById(`${gameId}-display`);
+    manualArea.style.display = manualArea.style.display === 'none' ? 'block' : 'none';
+    if (manualArea.style.display === 'block') manualArea.scrollIntoView({ behavior: 'smooth' });
+});
+
+btnAuto.addEventListener('click', async () => {
+    playSound('click');
+    btnAuto.disabled = true;
+    btnAuto.textContent = '추출 중... 🎰';
     display.innerHTML = '';
     
-    const config = GAMES[gameId];
-    const finalNumbers = config.generate();
+    const finalNumbers = Array.from({length: 45}, (_, i) => i + 1)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 6)
+        .sort((a,b)=>a-b);
+        
     const balls = [];
-
-    // Create placeholders
-    for (let i = 0; i < finalNumbers.length; i++) {
+    for (let i = 0; i < 6; i++) {
         const ball = document.createElement('div');
         ball.className = 'number spinning';
         ball.textContent = '?';
@@ -61,120 +59,83 @@ async function handleAuto(gameId) {
         balls.push(ball);
     }
 
-    // Rolling animation
-    for (let i = 0; i < balls.length; i++) {
+    for (let i = 0; i < 6; i++) {
         const ball = balls[i];
         const val = finalNumbers[i];
-        const duration = 500 + (i * 150);
+        const duration = 500 + (i * 200);
         
         const interval = setInterval(() => {
-            if(gameId === 'lotto') ball.textContent = Math.floor(Math.random()*45)+1;
-            else if(gameId === 'powerball' && i === 5) ball.textContent = Math.floor(Math.random()*10);
-            else if(gameId === 'powerball') ball.textContent = Math.floor(Math.random()*28)+1;
-            else ball.textContent = Math.floor(Math.random()*10);
+            ball.textContent = Math.floor(Math.random()*45)+1;
             playSound('rolling');
         }, 80);
 
         await new Promise(r => setTimeout(r, duration));
         clearInterval(interval);
         
-        ball.className = 'number';
-        ball.textContent = (gameId === 'pension' && i === 0) ? val + '조' : val;
-        applyBallStyles(ball, val, i, gameId);
+        ball.className = `number ${getBallColorClass(val)}`;
+        ball.textContent = val;
         playSound('pop');
     }
 
-    runAnalysis(finalNumbers, gameId);
-}
+    runAnalysis(finalNumbers);
+    btnAuto.disabled = false;
+    btnAuto.textContent = '자동 번호 생성 ✨';
+});
 
-function toggleManual(gameId) {
+btnAnalyze.addEventListener('click', () => {
     playSound('click');
-    const area = document.getElementById(`${gameId}-manual`);
-    const inputContainer = document.getElementById(`${gameId}-inputs`);
-    
-    if (area.style.display === 'none') {
-        area.style.display = 'block';
-        inputContainer.innerHTML = '';
-        const config = GAMES[gameId];
-        for (let i = 0; i < config.inputs; i++) {
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.placeholder = config.placeholders[i];
-            inputContainer.appendChild(input);
-        }
-    } else {
-        area.style.display = 'none';
-    }
-}
-
-function handleManual(gameId) {
-    playSound('click');
-    const inputs = document.querySelectorAll(`#${gameId}-inputs input`);
+    const inputs = document.querySelectorAll('.manual-inputs input');
     const numbers = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
-    const config = GAMES[gameId];
-
-    if (numbers.length < config.inputs) {
-        alert('모든 칸을 입력해주세요!');
-        return;
-    }
     
-    runAnalysis(numbers, gameId);
+    if (numbers.length < 6) { alert('6개의 번호를 모두 입력해주세요!'); return; }
+    if (new Set(numbers).size !== 6) { alert('중복된 번호가 있습니다!'); return; }
+    if (numbers.some(n => n < 1 || n > 45)) { alert('1~45 사이의 숫자만 입력 가능합니다!'); return; }
+
+    runAnalysis(numbers.sort((a,b)=>a-b));
+});
+
+function getBallColorClass(val) {
+    if (val <= 10) return 'num-1-10';
+    if (val <= 20) return 'num-11-20';
+    if (val <= 30) return 'num-21-30';
+    if (val <= 40) return 'num-31-40';
+    return 'num-41-45';
 }
 
-function applyBallStyles(ball, val, index, gameId) {
-    if(gameId === 'lotto') {
-        if (val <= 10) ball.classList.add('lotto-1-10');
-        else if (val <= 20) ball.classList.add('lotto-11-20');
-        else if (val <= 30) ball.classList.add('lotto-21-30');
-        else if (val <= 40) ball.classList.add('lotto-31-40');
-        else ball.classList.add('lotto-41-45');
-    } else if(gameId === 'pension') {
-        if(index === 0) ball.classList.add('pension-group');
-        else ball.classList.add('pension-num');
-    } else if(gameId === 'powerball') {
-        if(index === 5) ball.classList.add('powerball-red');
-        else ball.classList.add('lotto-11-20');
-    }
-}
-
-// --- Analysis Engine ---
-
-function runAnalysis(numbers, gameId) {
-    const reportArea = document.getElementById('analysis-report');
-    reportArea.style.display = 'block';
+function runAnalysis(numbers) {
+    reportSection.style.display = 'block';
     
+    const sum = numbers.reduce((a, b) => a + b, 0);
+    const odds = numbers.filter(n => n % 2 !== 0).length;
+    const highs = numbers.filter(n => n >= 23).length;
+    let consecs = 0;
+    for (let i = 0; i < numbers.length - 1; i++) if (numbers[i] + 1 === numbers[i+1]) consecs++;
+
     let score = 0;
-    let detailHTML = '';
-
-    if (gameId === 'lotto') {
-        const sum = numbers.reduce((a, b) => a + b, 0);
-        const odds = numbers.filter(n => n % 2 !== 0).length;
-        if (sum >= 100 && sum <= 170) score += 50;
-        if (odds >= 2 && odds <= 4) score += 50;
-        detailHTML = `<p>총합: ${sum} (${sum >= 100 && sum <= 170 ? '이상적' : '희귀'})</p><p>홀짝 비율: ${odds}:${6-odds}</p>`;
-    } else if (gameId === 'pension') {
-        score = 85; // Based on distribution
-        detailHTML = `<p>조: ${numbers[0]}</p><p>번호: ${numbers.slice(1).join('')}</p>`;
-    } else if (gameId === 'powerball') {
-        const sum = numbers.slice(0, 5).reduce((a, b) => a + b, 0);
-        if (sum >= 72 && sum <= 113) score += 70; else score += 30;
-        detailHTML = `<p>일반합: ${sum}</p><p>파워볼: ${numbers[5]}</p>`;
-    }
+    if (sum >= 100 && sum <= 170) score += 40; else if (sum >= 80 && sum <= 200) score += 20;
+    if (odds >= 2 && odds <= 4) score += 30;
+    if (highs >= 2 && highs <= 4) score += 20;
+    if (consecs <= 1) score += 10;
 
     animateScore(score);
-    document.getElementById('report-details').innerHTML = detailHTML;
-    document.getElementById('score-comment').textContent = score >= 80 ? "🚀 아주 강력한 당첨 확률을 가진 조합입니다!" : "⚖️ 균형 잡힌 데이터 분포입니다.";
     
-    reportArea.scrollIntoView({ behavior: 'smooth' });
+    reportDetails.innerHTML = `
+        <div class="detail-item"><span>번호 총합</span><strong>${sum}</strong></div>
+        <div class="detail-item"><span>홀짝 비율</span><strong>${odds}:${6-odds}</strong></div>
+        <div class="detail-item"><span>고저 비율</span><strong>${6-highs}:${highs}</strong></div>
+        <div class="detail-item"><span>연속 번호</span><strong>${consecs}회</strong></div>
+    `;
+    
+    scoreComment.textContent = score >= 80 ? "🚀 10년 데이터상 강력한 당첨 패턴입니다!" : "⚖️ 균형 잡힌 데이터 분포입니다.";
+    reportSection.scrollIntoView({ behavior: 'smooth' });
 }
 
 function animateScore(target) {
     let current = 0;
-    const el = document.getElementById('overall-score');
     const interval = setInterval(() => {
-        if (current >= target) { clearInterval(interval); el.textContent = target; }
-        else { current++; el.textContent = current; }
-    }, 15);
+        if (current >= target) { clearInterval(interval); overallScore.textContent = target; }
+        else { current++; overallScore.textContent = current; }
+    }, 20);
 }
 
 // Theme
