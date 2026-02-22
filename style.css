@@ -22,16 +22,21 @@ body.dark-mode {
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { 
     font-family: 'Pretendard', sans-serif; 
-    background-color: #f5f7fa; /* 이미지 로딩 전/실패 시 보여줄 배경색 */
-    background-image: url('https://i.imgur.com/7p3PGpA.png');
+    /* 고해상도 로또/투자 테마 이미지 적용 + 가독성을 위한 오버레이 필터 */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1633158829585-23bb8f628932?q=80&w=1920&auto=format&fit=crop');
     background-size: cover;
-    background-position: center center; /* 이미지를 중앙에 배치 */
+    background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     color: var(--text-primary); 
     transition: background-color 0.5s, color 0.3s; 
     overflow-x: hidden; 
     line-height: 1.6; 
+}
+
+/* 다크모드에서는 배경을 조금 더 어둡게 처리 */
+body.dark-mode {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1633158829585-23bb8f628932?q=80&w=1920&auto=format&fit=crop');
 }
 
 .container { max-width: 900px; margin: 0 auto; padding: 100px 20px 60px; }
