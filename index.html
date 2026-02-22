@@ -58,17 +58,44 @@
             </div>
         </section>
 
+        <!-- Analysis Section -->
         <section id="analysis" class="section bg-light">
             <div class="container">
-                <h2>실시간 분석 리포트 📊</h2>
-                <div class="analysis-grid">
-                    <div class="analysis-card">
-                        <h3>조합 밸런스</h3>
-                        <div id="balance-stats">대기 중...</div>
+                <div class="analysis-header">
+                    <h2>10년 데이터 기반 정밀 분석 리포트 📊</h2>
+                    <p>과거 10년(약 520회차) 이상의 당첨 통계를 바탕으로 생성된 번호의 확률적 가치를 평가합니다.</p>
+                </div>
+                
+                <div class="analysis-report-grid">
+                    <!-- Probability Score -->
+                    <div class="report-card score-main">
+                        <h3>통계적 당첨 기대 점수</h3>
+                        <div id="overall-score" class="score-display">0</div>
+                        <p id="score-comment">번호를 생성하여 분석을 시작하세요.</p>
                     </div>
-                    <div class="analysis-card">
-                        <h3>상세 데이터</h3>
-                        <div id="detail-stats">번호를 생성해주세요.</div>
+
+                    <!-- Detailed Stats -->
+                    <div class="report-card">
+                        <h3>패턴 밸런스 분석</h3>
+                        <div id="pattern-analysis" class="detail-list">
+                            <div class="detail-item"><span>총합 지수</span><strong id="stat-sum">-</strong></div>
+                            <div class="detail-item"><span>홀짝 비율</span><strong id="stat-odd-even">-</strong></div>
+                            <div class="detail-item"><span>고저 비율</span><strong id="stat-high-low">-</strong></div>
+                            <div class="detail-item"><span>연속 번호</span><strong id="stat-consecutive">-</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Historical Match -->
+                    <div class="report-card">
+                        <h3>역대 당첨 데이터 매칭</h3>
+                        <canvas id="match-chart" style="display:none;"></canvas>
+                        <div id="match-data" class="match-info">
+                            <p>생성된 조합이 과거 우승 패턴과 얼마나 일치하는지 계산합니다.</p>
+                            <div class="match-bar-container">
+                                <div id="match-bar" class="match-bar" style="width: 0%"></div>
+                            </div>
+                            <span id="match-percentage">0% Match</span>
+                        </div>
                     </div>
                 </div>
             </div>
