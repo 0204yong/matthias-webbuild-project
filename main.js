@@ -192,6 +192,4 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
     document.getElementById('val-high-low').textContent = `${highs}:${6-highs}`; 
     document.getElementById('val-consecutive').textContent = `${consecs}회`;
-    
-    report.scrollIntoView({ behavior: 'smooth' });
 }
