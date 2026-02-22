@@ -185,13 +185,32 @@ function runProfessionalAnalysis(numbers, type) {
     if (!report) return;
     report.style.display = 'block';
     document.getElementById('current-analyzed-numbers').textContent = numbers.join(', ');
+    
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
+    const evens = 6 - odds;
     const highs = numbers.filter(n => n >= 23).length;
-    document.getElementById('pattern-grade').textContent = (sum >= 100 && sum <= 170) ? "최적의 밸런스" : "안정적 표준";
+    const lows = 6 - highs;
+    
+    // Calculate Consecutive Pairs
+    let consecs = 0;
+    for (let i = 0; i < numbers.length - 1; i++) {
+        if (numbers[i] + 1 === numbers[i+1]) consecs++;
+    }
+
+    let pts = 0;
+    if (sum >= 100 && sum <= 170) pts++; 
+    if (odds >= 2 && odds <= 4) pts++; 
+    if (highs >= 2 && highs <= 4) pts++;
+    if (consecs <= 1) pts++;
+    
+    document.getElementById('pattern-grade').textContent = pts >= 4 ? "최적의 통계적 밸런스" : pts === 3 ? "안정적인 표준 조합" : "도전적인 변칙 패턴";
+    document.getElementById('status-icon').textContent = pts >= 4 ? "⚖️" : pts === 3 ? "✅" : "🚀";
+    
     document.getElementById('val-sum').textContent = sum;
-    document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
-    document.getElementById('val-high-low').textContent = `${highs}:${6-highs}`; 
-    document.getElementById('val-consecutive').textContent = "분석 완료";
+    document.getElementById('val-odd-even').textContent = `${odds}:${evens}`;
+    document.getElementById('val-high-low').textContent = `${highs}:${lows}`; 
+    document.getElementById('val-consecutive').textContent = `${consecs}회`;
+    
     report.scrollIntoView({ behavior: 'smooth' });
 }

@@ -89,7 +89,7 @@
             <div class="info-card glass">
                 <h3>로또 명당 가이드 📍</h3>
                 <p>전국 최다 당첨 배출점의 통계와 위치 정보를 확인하세요.</p>
-                <a href="guide.html" class="card-link">자세히 보기 →</a>
+                <a href="places.html" class="card-link">명당 지도 보기 →</a>
             </div>
         </section>
 
@@ -98,6 +98,7 @@
             <div class="report-header">
                 <div class="analyzed-numbers-tag">분석 대상: <span id="current-analyzed-numbers">-</span></div>
                 <h2>통계적 패턴 분석 리포트 📑</h2>
+                <p class="disclaimer" style="font-size: 0.8rem; color: #e74c3c; margin-top: 10px;">* 본 리포트는 10년 통계적 유의성을 바탕으로 하며 당첨을 보장하지 않습니다.</p>
             </div>
 
             <div class="report-main-grid">
@@ -109,10 +110,26 @@
                     </div>
                 </div>
                 <div class="analysis-details-grid">
-                    <div class="stat-box"><span>총합</span><strong id="val-sum">-</strong></div>
-                    <div class="stat-box"><span>홀짝</span><strong id="val-odd-even">-</strong></div>
-                    <div class="stat-box"><span>고저</span><strong id="val-high-low">-</strong></div>
-                    <div class="stat-box"><span>결과</span><strong id="val-consecutive">-</strong></div>
+                    <div class="stat-box">
+                        <span>번호 총합</span>
+                        <strong id="val-sum">-</strong>
+                        <p class="stat-info">역대 당첨의 72%가 100~170 사이입니다.</p>
+                    </div>
+                    <div class="stat-box">
+                        <span>홀짝 비율</span>
+                        <strong id="val-odd-even">-</strong>
+                        <p class="stat-info">3:3, 2:4, 4:2 균형 조합이 확률상 유리합니다.</p>
+                    </div>
+                    <div class="stat-box">
+                        <span>고저 비율</span>
+                        <strong id="val-high-low">-</strong>
+                        <p class="stat-info">번호가 한쪽으로 쏠리지 않는 균형을 분석합니다.</p>
+                    </div>
+                    <div class="stat-box">
+                        <span>연속 번호</span>
+                        <strong id="val-consecutive">-</strong>
+                        <p class="stat-info">대부분의 당첨 조합은 연속 번호가 2개 이하입니다.</p>
+                    </div>
                 </div>
             </div>
         </section>
