@@ -125,7 +125,6 @@ function initWinningPeriodSearch() {
     const resultArea = document.getElementById('winning-result-area');
     const btnAnalyzeWin = document.getElementById('btn-analyze-win');
     let lastFetchedNumbers = [];
-    let lastFetchedRound = 0;
 
     if (!btnSearch) return;
 
@@ -137,37 +136,41 @@ function initWinningPeriodSearch() {
         const round = calculateRoundFromPeriod(year, month, week);
         
         if (!round) {
-            alert('해당 주차에 로또 추첨 데이터가 없습니다. (다른 주차를 선택해주세요)');
+            alert('해당 주차에 로또 추첨 데이터가 없습니다. (해당 월의 주차를 다시 확인해주세요)');
             return;
         }
 
-        // Current Date check (Today is 2026-02-22)
-        // If the calculated round date is in the future, alert.
+        // Check if the round date is in the future
         const roundDate = getRoundDate(round);
-        if (roundDate > new Date("2026-02-22")) {
-            alert('아직 추첨 전인 주차입니다.');
+        const today = new Date();
+        if (roundDate > today) {
+            alert('아직 추첨 전인 주차입니다. (추첨일: ' + roundDate.toLocaleDateString() + ')');
             return;
         }
 
         playSound('click');
         btnSearch.disabled = true;
-        btnSearch.textContent = '분석 데이터 호출 중... 🔍';
+        btnSearch.textContent = '데이터 호출 중... 🔍';
+        resultArea.style.display = 'none';
 
         try {
-            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
-            const data = await response.json();
-            const lottoData = JSON.parse(data.contents);
+            // Using corsproxy.io for better stability
+            const targetUrl = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`;
+            const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const lottoData = await response.json();
 
             if (lottoData.returnValue === "fail") {
-                alert('데이터를 가져오지 못했습니다. (회차 번호: ' + round + ')');
-                resultArea.style.display = 'none';
+                alert('해당 회차(' + round + '회)의 정보를 찾을 수 없습니다.');
             } else {
                 displayWinningResult(lottoData, `${year}년 ${month}월 ${week}주차`);
                 lastFetchedNumbers = [lottoData.drwtNo1, lottoData.drwtNo2, lottoData.drwtNo3, lottoData.drwtNo4, lottoData.drwtNo5, lottoData.drwtNo6];
-                lastFetchedRound = round;
             }
         } catch (error) {
-            alert('네트워크 오류가 발생했습니다.');
+            console.error('Fetch error:', error);
+            alert('네트워크 연결이 원활하지 않거나 데이터 서버에 응답이 없습니다. 잠시 후 다시 시도해주세요.');
         } finally {
             btnSearch.disabled = false;
             btnSearch.textContent = '당첨 결과 조회 🔍';
@@ -182,34 +185,18 @@ function initWinningPeriodSearch() {
     });
 }
 
-// Algorithm to calculate Lotto Round from (Year, Month, Week)
-// Base point: Round 1153 on Jan 4, 2025 (Sat)
 function calculateRoundFromPeriod(year, month, week) {
     const firstDayOfMonth = new Date(year, month - 1, 1);
     let firstSaturday = new Date(firstDayOfMonth);
-    
-    // Find first Saturday
     while (firstSaturday.getDay() !== 6) {
         firstSaturday.setDate(firstSaturday.getDate() + 1);
     }
-    
-    // Target Date = First Saturday + (Week - 1) * 7 days
     const targetDate = new Date(firstSaturday);
     targetDate.setDate(targetDate.getDate() + (week - 1) * 7);
-    
-    // Ensure the target date is still in the same month
-    if (targetDate.getMonth() !== month - 1) {
-        return null;
-    }
-
-    // Base info
+    if (targetDate.getMonth() !== month - 1) return null;
     const baseDate = new Date(2025, 0, 4); // Jan 4, 2025
     const baseRound = 1153;
-    
-    // Calculate difference in weeks
-    const diffInMs = targetDate - baseDate;
-    const diffInWeeks = Math.round(diffInMs / (1000 * 60 * 60 * 24 * 7));
-    
+    const diffInWeeks = Math.round((targetDate - baseDate) / (1000 * 60 * 60 * 24 * 7));
     return baseRound + diffInWeeks;
 }
 
@@ -261,28 +248,23 @@ function getBallColorClass(val) {
 function runProfessionalAnalysis(numbers, type) {
     const reportSection = document.getElementById('analysis-report');
     if (!reportSection) return;
-    
     reportSection.style.display = 'block';
     document.getElementById('current-analyzed-numbers').textContent = `${type}: ${numbers.join(', ')}`;
-    
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
     const highs = numbers.filter(n => n >= 23).length;
     let consecs = 0;
     for (let i = 0; i < numbers.length - 1; i++) if (numbers[i] + 1 === numbers[i+1]) consecs++;
-
     let points = 0;
     if (sum >= 100 && sum <= 170) points++;
     if (odds >= 2 && odds <= 4) points++;
     if (highs >= 2 && highs <= 4) points++;
     if (consecs <= 1) points++;
-
     let grade, desc, icon;
     if (points === 4) { grade = "최적의 통계적 밸런스"; desc = "모든 통계 지표가 역대 당첨 데이터의 최빈값 범위에 속하는 매우 안정적인 조합입니다."; icon = "⚖️"; }
     else if (points === 3) { grade = "안정적인 표준 조합"; desc = "대부분의 지표가 표준 분포 내에 있으며, 균형 잡힌 확률적 구성을 보여줍니다."; icon = "✅"; }
     else if (points === 2) { grade = "도전적인 실험적 패턴"; desc = "일부 지표가 희귀 패턴을 포함하고 있습니다."; icon = "🚀"; }
     else { grade = "희귀한 변칙적 패턴"; desc = "통계적으로 출현 빈도가 낮은 극단적인 구성입니다."; icon = "🌋"; }
-
     document.getElementById('pattern-grade').textContent = grade;
     document.getElementById('pattern-desc').textContent = desc;
     document.getElementById('status-icon').textContent = icon;
@@ -290,6 +272,5 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
     document.getElementById('val-high-low').textContent = `${6-highs}:${highs}`; 
     document.getElementById('val-consecutive').textContent = `${consecs}회`;
-    
     reportSection.scrollIntoView({ behavior: 'smooth' });
 }
