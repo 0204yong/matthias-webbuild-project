@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="로또 6/45, 연금복권 720+, 파워볼 번호 생성 및 분석 플랫폼. 당신의 행운을 과학적으로 분석하세요.">
+    <meta name="description" content="로또, 연금복권, 파워볼 종합 행운 센터. 각 복권별 정밀 분석 리포트 제공.">
     <title>Lucky Lotto Hub | 종합 복권 행운 센터 ✨</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
@@ -13,94 +13,85 @@
         <div class="nav-container">
             <a href="#" class="nav-logo">Lucky Lotto Hub 🍀</a>
             <ul class="nav-menu">
-                <li><a href="#generator">추천기</a></li>
-                <li><a href="#analysis">분석도구</a></li>
-                <li><a href="#guides">가이드</a></li>
+                <li><a href="#lotto-section">로또 6/45</a></li>
+                <li><a href="#pension-section">연금복권 720+</a></li>
+                <li><a href="#powerball-section">파워볼</a></li>
             </ul>
             <button id="theme-toggle">🌙</button>
         </div>
     </nav>
 
-    <main>
-        <section id="generator" class="section hero">
-            <div class="container">
-                <!-- Game Type Selector -->
-                <div class="game-selector">
-                    <button class="game-btn active" data-game="lotto">로또 6/45</button>
-                    <button class="game-btn" data-game="pension">연금복권 720+</button>
-                    <button class="game-btn" data-game="powerball">파워볼</button>
-                </div>
+    <main class="container">
+        <!-- 1. Lotto 6/45 Section -->
+        <section id="lotto-section" class="game-card">
+            <div class="game-header">
+                <h2>로또 6/45 🎰</h2>
+                <p>1~45 숫자 중 6개 선택</p>
+            </div>
+            <div id="lotto-display" class="numbers-display"></div>
+            <div class="game-controls">
+                <button onclick="handleAuto('lotto')" class="btn-primary">자동 생성 ✨</button>
+                <button onclick="toggleManual('lotto')" class="btn-secondary">수동 분석 ✍️</button>
+            </div>
+            <div id="lotto-manual" class="manual-area" style="display:none;">
+                <div class="manual-inputs" id="lotto-inputs"></div>
+                <button onclick="handleManual('lotto')" class="btn-analyze">조합 분석하기 📊</button>
+            </div>
+        </section>
 
-                <div class="mode-tabs">
-                    <button id="auto-mode-btn" class="tab-btn active">자동 생성 🎰</button>
-                    <button id="manual-mode-btn" class="tab-btn">수동 분석 ✍️</button>
-                </div>
+        <!-- 2. Pension 720+ Section -->
+        <section id="pension-section" class="game-card">
+            <div class="game-header">
+                <h2>연금복권 720+ 🏠</h2>
+                <p>1~5조 + 6자리 숫자 조합</p>
+            </div>
+            <div id="pension-display" class="numbers-display"></div>
+            <div class="game-controls">
+                <button onclick="handleAuto('pension')" class="btn-primary">자동 생성 ✨</button>
+                <button onclick="toggleManual('pension')" class="btn-secondary">수동 분석 ✍️</button>
+            </div>
+            <div id="pension-manual" class="manual-area" style="display:none;">
+                <div class="manual-inputs" id="pension-inputs"></div>
+                <button onclick="handleManual('pension')" class="btn-analyze">조합 분석하기 📊</button>
+            </div>
+        </section>
 
-                <div id="auto-view">
-                    <div id="numbers-container" class="numbers-display">
-                        <!-- 자동 번호가 여기에 생성됩니다 -->
-                    </div>
-                    <div class="button-group">
-                        <button id="generate-button" class="btn-primary">번호 생성하기 ✨</button>
-                    </div>
-                </div>
+        <!-- 3. Powerball Section -->
+        <section id="powerball-section" class="game-card">
+            <div class="game-header">
+                <h2>파워볼 🎰</h2>
+                <p>일반볼 5개(1~28) + 파워볼 1개(0~9)</p>
+            </div>
+            <div id="powerball-display" class="numbers-display"></div>
+            <div class="game-controls">
+                <button onclick="handleAuto('powerball')" class="btn-primary">자동 생성 ✨</button>
+                <button onclick="toggleManual('powerball')" class="btn-secondary">수동 분석 ✍️</button>
+            </div>
+            <div id="powerball-manual" class="manual-area" style="display:none;">
+                <div class="manual-inputs" id="powerball-inputs"></div>
+                <button onclick="handleManual('powerball')" class="btn-analyze">조합 분석하기 📊</button>
+            </div>
+        </section>
 
-                <div id="manual-view" style="display: none;">
-                    <div id="manual-inputs-container" class="manual-input-group">
-                        <!-- 게임 타입에 따라 입력 필드가 여기에 동적으로 생성됩니다 -->
+        <!-- Analysis Report Area (Shared) -->
+        <section id="analysis-report" class="report-section" style="display:none;">
+            <div class="report-container">
+                <h2>실시간 분석 리포트 📊</h2>
+                <div class="report-grid">
+                    <div class="report-card score-card">
+                        <h3>당첨 기대 점수</h3>
+                        <div id="overall-score" class="big-score">0</div>
+                        <p id="score-comment">데이터 분석 중...</p>
                     </div>
-                    <div class="button-group">
-                        <button id="manual-analyze-button" class="btn-primary">내 번호 분석하기 📊</button>
+                    <div class="report-card detail-card">
+                        <h3>패턴 밸런스</h3>
+                        <div id="report-details"></div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- Analysis Section -->
-        <section id="analysis" class="section bg-light">
-            <div class="container">
-                <div class="analysis-header">
-                    <h2>10년 데이터 기반 정밀 분석 리포트 📊</h2>
-                    <p>과거 10년(약 520회차) 이상의 당첨 통계를 바탕으로 생성된 번호의 확률적 가치를 평가합니다.</p>
-                </div>
-                
-                <div class="analysis-report-grid">
-                    <!-- Probability Score -->
-                    <div class="report-card score-main">
-                        <h3>통계적 당첨 기대 점수</h3>
-                        <div id="overall-score" class="score-display">0</div>
-                        <p id="score-comment">번호를 생성하여 분석을 시작하세요.</p>
-                    </div>
-
-                    <!-- Detailed Stats -->
-                    <div class="report-card">
-                        <h3>패턴 밸런스 분석</h3>
-                        <div id="pattern-analysis" class="detail-list">
-                            <div class="detail-item"><span>총합 지수</span><strong id="stat-sum">-</strong></div>
-                            <div class="detail-item"><span>홀짝 비율</span><strong id="stat-odd-even">-</strong></div>
-                            <div class="detail-item"><span>고저 비율</span><strong id="stat-high-low">-</strong></div>
-                            <div class="detail-item"><span>연속 번호</span><strong id="stat-consecutive">-</strong></div>
-                        </div>
-                    </div>
-
-                    <!-- Historical Match -->
-                    <div class="report-card">
-                        <h3>역대 당첨 데이터 매칭</h3>
-                        <canvas id="match-chart" style="display:none;"></canvas>
-                        <div id="match-data" class="match-info">
-                            <p>생성된 조합이 과거 우승 패턴과 얼마나 일치하는지 계산합니다.</p>
-                            <div class="match-bar-container">
-                                <div id="match-bar" class="match-bar" style="width: 0%"></div>
-                            </div>
-                            <span id="match-percentage">0% Match</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- (Guides and Footer remain same for consistency) -->
     </main>
+
     <script src="main.js"></script>
 </body>
 </html>
