@@ -1,3 +1,42 @@
+// --- Digital Sound Engine ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playHoverSound() {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = 'sine'; // 디지털 느낌의 맑은 사인파
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // 주파수 설정 (800Hz)
+    oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05); // 주파수 상승 효과
+
+    gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // 볼륨 조절 (작고 선명하게)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05); // 짧게 사라짐
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.05);
+}
+
+// Attach Sound to Elements
+function attachHoverSounds() {
+    const targets = 'a, button, .manual-input, .tab-btn';
+    document.querySelectorAll(targets).forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            playHoverSound();
+        });
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    attachHoverSounds();
+});
+
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const body = document.body;
