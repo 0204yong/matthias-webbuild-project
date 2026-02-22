@@ -1,66 +1,138 @@
 :root {
-    --bg-color: #ffffff;
-    --text-color: #000000;
-    --number-bg: #eee;
-    --button-bg: #f0f0f0;
-    --button-text: #000000;
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --text-primary: #2d3436;
+    --text-secondary: #636e72;
+    --accent-color: #0984e3;
+    --button-bg: #0984e3;
+    --button-hover: #74b9ff;
+    --shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    
+    /* Lotto Ball Colors */
+    --ball-1: #f1c40f; /* 1-10: Yellow */
+    --ball-11: #3498db; /* 11-20: Blue */
+    --ball-21: #e74c3c; /* 21-30: Red */
+    --ball-31: #95a5a6; /* 31-40: Gray */
+    --ball-41: #2ecc71; /* 41-45: Green */
 }
 
 body.dark-mode {
-    --bg-color: #121212;
-    --text-color: #e0e0e0;
-    --number-bg: #333;
-    --button-bg: #444;
-    --button-text: #ffffff;
+    --bg-gradient: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+    --card-bg: rgba(45, 52, 54, 0.9);
+    --text-primary: #dfe6e9;
+    --text-secondary: #b2bec3;
+    --accent-color: #74b9ff;
+    --button-bg: #0984e3;
+    --button-hover: #074b83;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 body {
-    font-family: sans-serif;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
     margin: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s, color 0.3s;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    transition: background 0.5s ease, color 0.3s ease;
+}
+
+.container {
+    background: var(--card-bg);
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    backdrop-filter: blur(10px);
+    max-width: 500px;
+    width: 90%;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 800;
+}
+
+p.subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
 }
 
 #numbers-container {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 12px;
+    margin: 2rem 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    min-height: 60px;
 }
 
 .number {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background-color: var(--number-bg);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 1.2rem;
     font-weight: bold;
-    color: var(--text-color);
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Dynamic colors based on number range */
+.num-1-10 { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+.num-11-20 { background: linear-gradient(135deg, #3498db, #2980b9); }
+.num-21-30 { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.num-31-40 { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+.num-41-45 { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+
 button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 12px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
     background-color: var(--button-bg);
-    color: var(--button-text);
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    transition: background-color 0.3s, color 0.3s;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+}
+
+button:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(9, 132, 227, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
 }
 
 #theme-toggle {
-    position: absolute;
+    position: fixed;
     top: 20px;
     right: 20px;
-    margin-top: 0;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
+}
+
+body.dark-mode #theme-toggle {
+    border-color: rgba(255, 255, 255, 0.1);
 }
