@@ -123,6 +123,13 @@ footer { background: var(--text-main); color: white; padding: 80px 0 40px; margi
 .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-weight: 600; }
 .copyright { opacity: 0.4; font-size: 0.8rem; width: 100%; }
 
+/* Probability Heatmap Classes */
+.prob-card { transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: default; }
+.prob-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+.prob-hot { background: linear-gradient(135deg, #ff7675, #d63031); box-shadow: 0 4px 15px rgba(214, 48, 49, 0.3); }
+.prob-normal { background: linear-gradient(135deg, #fdcb6e, #e17055); box-shadow: 0 4px 15px rgba(225, 112, 85, 0.2); }
+.prob-cold { background: linear-gradient(135deg, #74b9ff, #0984e3); box-shadow: 0 4px 15px rgba(9, 132, 227, 0.2); }
+
 /* Ball Colors */
 .num-1-10 { background: #f1c40f; } .num-11-20 { background: #3498db; } .num-21-30 { background: #e74c3c; } .num-31-40 { background: #95a5a6; } .num-41-45 { background: #2ecc71; }
 
