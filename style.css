@@ -1,29 +1,28 @@
-
 :root {
-    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    --card-bg: rgba(255, 255, 255, 0.98);
+    --card-bg: rgba(255, 255, 255, 0.95);
     --text-primary: #2d3436;
     --text-secondary: #636e72;
     --accent-color: #0984e3;
     --btn-primary: #0984e3;
     --btn-secondary: #00b894;
-    --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
     --border-radius: 32px;
 }
 
 body.dark-mode {
-    --bg-gradient: linear-gradient(135deg, #2d3436 0%, #000000 100%);
-    --card-bg: rgba(45, 52, 54, 0.98);
+    --card-bg: rgba(30, 30, 30, 0.95);
     --text-primary: #dfe6e9;
     --text-secondary: #b2bec3;
-    --shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body { 
     font-family: 'Pretendard', sans-serif; 
-    /* 고해상도 로또/투자 테마 이미지 적용 + 가독성을 위한 오버레이 필터 */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1633158829585-23bb8f628932?q=80&w=1920&auto=format&fit=crop');
+    /* 배경 설정 최적화 */
+    background-color: #1a1a1a;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                      url('https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?q=80&w=1920&auto=format&fit=crop');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -32,22 +31,17 @@ body {
     transition: background-color 0.5s, color 0.3s; 
     overflow-x: hidden; 
     line-height: 1.6; 
+    min-height: 100vh;
 }
 
-/* 다크모드에서는 배경을 조금 더 어둡게 처리 */
-body.dark-mode {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1633158829585-23bb8f628932?q=80&w=1920&auto=format&fit=crop');
-}
-
-.container { max-width: 900px; margin: 0 auto; padding: 100px 20px 60px; }
+.container { max-width: 1000px; margin: 0 auto; padding: 100px 20px 60px; position: relative; z-index: 1; }
 
 /* Navbar */
-.navbar { height: 70px; background: var(--card-bg); position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
-.nav-container { display: flex; justify-content: space-between; align-items: center; height: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px; }
+.navbar { height: 70px; background: var(--card-bg); position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
+.nav-container { display: flex; justify-content: space-between; align-items: center; height: 100%; max-width: 1000px; margin: 0 auto; padding: 0 20px; }
 .nav-logo { font-size: 1.5rem; font-weight: 800; color: var(--accent-color); text-decoration: none; }
 .nav-links { display: flex; gap: 20px; }
-.nav-link { text-decoration: none; color: var(--text-primary); font-weight: 600; font-size: 0.95rem; transition: color 0.3s; }
-.nav-link:hover { color: var(--accent-color); }
+.nav-link { text-decoration: none; color: var(--text-primary); font-weight: 600; font-size: 0.95rem; }
 #theme-toggle { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
 
 /* Main Card */
@@ -61,7 +55,7 @@ body.dark-mode {
 }
 
 .mode-tabs {
-    display: flex; justify-content: center; gap: 15px; background: rgba(0,0,0,0.03); padding: 10px;
+    display: flex; justify-content: center; gap: 15px; background: rgba(0,0,0,0.05); padding: 10px;
     border-radius: 20px; margin-bottom: 3rem; max-width: 450px; margin-left: auto; margin-right: auto;
 }
 
@@ -69,123 +63,45 @@ body.dark-mode {
     flex: 1; padding: 12px 20px; border: none; background: transparent; color: var(--text-secondary);
     font-weight: 800; font-size: 1rem; cursor: pointer; border-radius: 14px; transition: all 0.3s;
 }
-.tab-btn.active { background: var(--card-bg); color: var(--accent-color); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.tab-btn.active { background: var(--accent-color); color: white; box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3); }
 
-/* Views & Controls */
-.game-header { text-align: center; margin-bottom: 2.5rem; }
-.game-header h1 { font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800; }
-.game-header p { color: var(--text-secondary); }
-
-.numbers-display { display: flex; gap: 15px; margin: 2.5rem 0; justify-content: center; flex-wrap: wrap; min-height: 70px; }
+/* Numbers Display */
+.numbers-display { display: flex; gap: 12px; margin: 2.5rem 0; justify-content: center; flex-wrap: wrap; min-height: 70px; }
 .number {
-    width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; font-weight: 800; color: white; box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; font-weight: 800; color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.2);
 }
 .spinning { filter: blur(3px); transform: scale(0.9); transition: all 0.1s; }
 
-.manual-inputs { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 2rem 0; }
-.manual-inputs input {
-    width: 65px; height: 65px; border-radius: 16px; border: 2px solid #ddd; text-align: center;
-    font-size: 1.5rem; font-weight: 800; background: var(--card-bg); color: var(--text-primary); outline: none; transition: all 0.3s;
-}
-.manual-inputs input:focus { border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 0 20px rgba(9, 132, 227, 0.15); }
+/* History Table */
+.table-wrapper { overflow-x: auto; margin-top: 1rem; border-radius: 24px; border: 1px solid rgba(0,0,0,0.1); background: #fff; }
+body.dark-mode .table-wrapper { background: #2d3436; }
+.history-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+.history-table th, .history-table td { padding: 15px 10px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; }
+.history-table th { background: #f8f9fa; font-weight: 800; color: var(--accent-color); }
+body.dark-mode .history-table th { background: #1e272e; }
 
-.button-group { display: flex; justify-content: center; margin-top: 1.5rem; }
-.btn-primary, .btn-secondary {
-    padding: 18px 48px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 1.1rem;
-}
-.btn-primary { background: var(--btn-primary); color: white; box-shadow: 0 8px 25px rgba(9, 132, 227, 0.3); }
-.btn-secondary { background: var(--btn-secondary); color: white; box-shadow: 0 8px 25px rgba(0, 184, 148, 0.3); }
-.btn-primary:hover, .btn-secondary:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
-
-/* Report Area */
-.report-section { background: var(--card-bg); padding: 4rem 3rem; border-radius: 40px; box-shadow: var(--shadow); margin-bottom: 5rem; }
-.analyzed-numbers-tag { display: inline-block; background: var(--accent-color); color: white; padding: 6px 16px; border-radius: 30px; font-weight: 800; font-size: 0.9rem; margin-bottom: 1.5rem; }
-.report-header { text-align: center; margin-bottom: 3rem; }
-.disclaimer { font-size: 0.85rem; color: #e74c3c; font-weight: 600; margin-top: 10px; }
-
-.status-card { display: flex; align-items: center; gap: 2.5rem; background: rgba(9, 132, 227, 0.05); padding: 2.5rem; border-radius: 32px; border: 1px solid rgba(9, 132, 227, 0.1); margin-bottom: 3rem; }
-.status-icon { font-size: 4rem; }
-.status-text h3 { font-size: 2.2rem; font-weight: 800; color: var(--accent-color); }
-.analysis-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
-.analysis-item-card { background: var(--card-bg); padding: 2rem; border-radius: 28px; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; }
-.item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.item-title { font-weight: 800; color: var(--text-primary); }
-.item-value { font-weight: 800; font-size: 1.4rem; color: var(--accent-color); background: rgba(9, 132, 227, 0.08); padding: 4px 14px; border-radius: 12px; }
-.item-desc { font-size: 0.9rem; color: var(--text-secondary); }
-
-/* Winning Section Styles */
-.winning-card { background: var(--card-bg); padding: 3rem 2rem; border-radius: var(--border-radius); border-top: 5px solid #f1c40f; }
-
-.search-filters { display: flex; justify-content: center; gap: 10px; margin-bottom: 3rem; flex-wrap: wrap; }
-.search-filters select {
-    height: 55px; border-radius: 12px; border: 2px solid #ddd; padding: 0 15px;
-    font-size: 1rem; font-weight: 700; outline: none; transition: all 0.3s;
-    background-color: var(--card-bg); color: var(--text-primary);
-}
-.search-filters select:focus { border-color: var(--accent-color); }
-.search-filters button { height: 55px; padding: 0 30px; }
-
-.winning-result-area {
-    margin-top: 2rem; padding: 2rem; background: rgba(0,0,0,0.02); border-radius: 25px;
-    animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-.winning-numbers-box { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 1.5rem 0; flex-wrap: wrap; }
-.plus-icon { font-size: 2rem; font-weight: 800; color: var(--text-secondary); }
-.winning-date { color: var(--text-secondary); font-weight: 600; margin-top: 10px; }
-
-/* History Table Styles */
-.table-wrapper { overflow-x: auto; margin-top: 1rem; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); background: var(--card-bg); backdrop-filter: blur(10px); }
-.history-table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 0.85rem; }
-.history-table th, .history-table td { padding: 18px 10px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; vertical-align: middle; }
-.history-table th { background: rgba(9, 132, 227, 0.08); font-weight: 800; color: var(--accent-color); white-space: nowrap; }
-.history-table td { font-weight: 600; color: var(--text-primary); }
-
-.history-table .numbers-display { margin: 0; justify-content: center; transform: scale(0.8); gap: 5px; }
-.history-table .number { width: 35px; height: 38px; font-size: 0.9rem; border-radius: 10px; } /* Slightly rectangular balls for table */
-
-.prize-info { display: flex; flex-direction: column; gap: 4px; }
+.prize-amount { color: var(--btn-primary); font-weight: 800; }
 .winner-count { color: var(--btn-secondary); font-weight: 800; }
-.prize-amount { color: var(--btn-primary); font-size: 0.95rem; font-weight: 800; }
-.total-sales { color: var(--text-secondary); font-size: 0.8rem; }
 
-/* Grade Badges */
-.grade-badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
-.grade-opt { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
-.grade-std { background: rgba(52, 152, 219, 0.15); color: #2980b9; }
-.grade-exp { background: rgba(241, 196, 15, 0.15); color: #f39c12; }
-.grade-rare { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+.grade-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
+.grade-opt { background: #e3f9e5; color: #27ae60; }
+.grade-std { background: #e3f2fd; color: #2980b9; }
+.grade-rare { background: #fff5f5; color: #e74c3c; }
 
-.loading-area { padding: 40px; text-align: center; color: var(--text-secondary); font-weight: 700; }
-
-/* Guide Preview */
-.guide-preview-section { margin-top: 4rem; }
-.guide-preview-section h2 { font-size: 1.8rem; margin-bottom: 2rem; text-align: center; }
-.guide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-.guide-card { background: var(--card-bg); padding: 2rem; border-radius: 24px; box-shadow: var(--shadow); text-decoration: none; color: var(--text-primary); transition: transform 0.3s; border: 1px solid rgba(0,0,0,0.05); }
-.guide-card:hover { transform: translateY(-5px); border-color: var(--accent-color); }
-.guide-card h3 { color: var(--accent-color); margin-bottom: 1rem; }
-.guide-card p { color: var(--text-secondary); }
-
-/* Footer */
-footer { border-top: 1px solid rgba(0,0,0,0.1); padding: 40px 0; margin-top: 60px; text-align: center; color: var(--text-secondary); font-size: 0.9rem; }
-.footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 20px; }
-.footer-links a { text-decoration: none; color: var(--text-secondary); transition: color 0.3s; }
-.footer-links a:hover { color: var(--accent-color); }
-
-/* Ball Colors */
+/* Lotto Ball Colors */
 .num-1-10 { background: linear-gradient(135deg, #f1c40f, #f39c12); }
 .num-11-20 { background: linear-gradient(135deg, #3498db, #2980b9); }
 .num-21-30 { background: linear-gradient(135deg, #e74c3c, #c0392b); }
 .num-31-40 { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
 .num-41-45 { background: linear-gradient(135deg, #2ecc71, #27ae60); }
 
+/* Report Area */
+.report-section { background: var(--card-bg); padding: 3rem; border-radius: 40px; box-shadow: var(--shadow); margin-bottom: 5rem; }
+.analysis-item-card { background: rgba(0,0,0,0.02); padding: 1.5rem; border-radius: 20px; margin-bottom: 15px; }
+
 @media (max-width: 768px) {
     .container { padding-top: 80px; }
-    .status-card { flex-direction: column; text-align: center; gap: 1rem; }
-    .analysis-details-grid { grid-template-columns: 1fr; }
-    .nav-links { display: none; } /* Mobile: Hide nav links for simplicity */
+    .history-table { font-size: 0.8rem; }
+    .number { width: 40px; height: 40px; font-size: 1rem; }
 }
