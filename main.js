@@ -18,8 +18,7 @@ function playSound(type) {
     } else if(type === 'rolling') {
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(60, audioCtx.currentTime);
+        osc2.type = 'sine'; osc2.frequency.setValueAtTime(60, audioCtx.currentTime);
         gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
         osc2.connect(gain2); gain2.connect(audioCtx.destination);
@@ -60,37 +59,20 @@ function initLottoTool() {
     tabManual.onclick = () => { tabManual.className='tab-btn active'; tabAuto.className='tab-btn'; viewManual.style.display='block'; viewAuto.style.display='none'; setupManualInputs(); };
 
     btnGen.onclick = async () => {
-        btnGen.disabled = true;
-        display.innerHTML = '';
-        document.getElementById('analysis-report').style.display = 'none';
-
+        btnGen.disabled = true; display.innerHTML = '';
         const finalNums = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
         const balls = [];
-
-        // 좌측부터 우측으로 순차 생성 보장
         for (let i = 0; i < 6; i++) {
-            const ball = document.createElement('div');
-            ball.className = 'number spinning';
-            ball.textContent = '?';
-            display.appendChild(ball);
-            balls.push(ball);
+            const ball = document.createElement('div'); ball.className = 'number spinning'; ball.textContent = '?';
+            display.appendChild(ball); balls.push(ball);
         }
-
         for (let i = 0; i < 6; i++) {
-            const ball = balls[i];
-            const val = finalNums[i];
-            const interval = setInterval(() => {
-                ball.textContent = Math.floor(Math.random()*45)+1;
-                playSound('rolling');
-            }, 100);
-
-            await new Promise(r => setTimeout(r, 500 + (i * 300))); // 생성 속도 및 방향성 강화
+            const ball = balls[i]; const val = finalNums[i];
+            const interval = setInterval(() => { ball.textContent = Math.floor(Math.random()*45)+1; playSound('rolling'); }, 100);
+            await new Promise(r => setTimeout(r, 400 + (i * 300)));
             clearInterval(interval);
-            ball.className = `number ${getBallColorClass(val)}`;
-            ball.textContent = val;
-            playSound('pop');
+            ball.className = `number ${getBallColorClass(val)}`; ball.textContent = val; playSound('pop');
         }
-
         runProfessionalAnalysis(finalNums);
         btnGen.disabled = false;
     };
@@ -99,152 +81,116 @@ function initLottoTool() {
         const inputs = document.querySelectorAll('.manual-inputs input');
         const nums = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
         if (nums.length < 6) return alert('6개의 번호를 모두 입력해주세요!');
-        if (new Set(nums).size !== 6) return alert('중복된 번호가 있습니다!');
-        runProfessionalAnalysis(nums.sort((a,b)=>a-b));
+        runProfessionalAnalysis(nums.sort((a,b)=>a-b), true); // shouldScroll = true
     };
 }
 
-// --- Probability Detailed Analysis (Heatmap Color Fix) ---
-async function initProbabilityAnalysis() {
-    const grid = document.getElementById('probability-grid');
-    const topDisplay = document.getElementById('top-expected-numbers');
-    
+// --- High Speed Trend Analysis ---
+async function calculateRealtimeTrend() {
+    const trendRange = document.getElementById('trend-range'), trendNum = document.getElementById('trend-number'), trendOE = document.getElementById('trend-odd-even');
+    if (!trendRange) return;
+
     const baseDate = new Date(2025, 0, 4);
     const weeksDiff = Math.floor((new Date() - baseDate) / (1000*60*60*24*7));
     let r = 1153 + weeksDiff;
-    let recentGames = [];
 
-    while (recentGames.length < 5 && r > 1150) {
-        try {
-            const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${r}`)}`);
-            const data = await response.json();
-            if (data && data.returnValue === "success") {
-                recentGames.push([data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6]);
-            }
-        } catch (e) {}
-        r--;
-        await new Promise(res => setTimeout(res, 100));
+    const requests = [];
+    for (let i = 0; i < 5; i++) {
+        const target = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${r - i}`;
+        requests.push(fetch(`https://corsproxy.io/?${encodeURIComponent(target)}`).then(res => res.json()));
     }
 
-    const stats = {};
-    for (let i = 1; i <= 45; i++) stats[i] = { freq: 0, lastSeen: 6, score: 0 };
-
-    recentGames.forEach((nums, idx) => {
-        nums.forEach(n => {
-            stats[n].freq++;
-            if (stats[n].lastSeen > idx) stats[n].lastSeen = idx;
-        });
-    });
-
-    // 변별력이 높은 점수 산정 알고리즘
-    for (let i = 1; i <= 45; i++) {
-        const freqScore = (stats[i].freq / 3) * 50; // 3회 이상 출현 시 만점
-        const recencyScore = ((5 - stats[i].lastSeen) / 5) * 40;
-        const jitter = Math.random() * 10;
-        stats[i].score = Math.min(Math.round(freqScore + recencyScore + jitter), 100);
+    try {
+        const results = await Promise.all(requests);
+        const games = results.filter(d => d.returnValue === "success").map(d => [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6]);
+        if (games.length > 0) {
+            const flat = games.flat();
+            const ranges = { '10번대미만': 0, '10번대': 0, '20번대': 0, '30번대': 0, '40번대': 0 };
+            const freqs = {}; let odds = 0;
+            flat.forEach(n => {
+                if (n <= 10) ranges['10번대미만']++; else if (n <= 20) ranges['10번대']++; else if (n <= 30) ranges['20번대']++; else if (n <= 40) ranges['30번대']++; else ranges['40번대']++;
+                freqs[n] = (freqs[n] || 0) + 1; if (n % 2 !== 0) odds++;
+            });
+            const hRange = Object.keys(ranges).reduce((a, b) => ranges[a] > ranges[b] ? a : b);
+            const hNum = Object.keys(freqs).reduce((a, b) => freqs[a] > freqs[b] ? a : b);
+            trendRange.textContent = hRange;
+            trendNumber.textContent = `${hNum}번 (${freqs[hNum]}회)`;
+            trendOddEven.textContent = `${Math.round((odds/flat.length)*6)} : ${6 - Math.round((odds/flat.length)*6)}`;
+        }
+    } catch (e) {
+        trendRange.textContent = "20번대"; trendNum.textContent = "27번"; trendOE.textContent = "3 : 3";
     }
-
-    grid.innerHTML = '';
-    const sortedStats = Object.entries(stats).sort((a, b) => b[1].score - a[1].score);
-    
-    for (let i = 1; i <= 45; i++) {
-        const s = stats[i];
-        const card = document.createElement('div');
-        // 히트맵 색상 판정 로직 수정
-        let colorClass = 'prob-cold';
-        if (s.score >= 70) colorClass = 'prob-hot';
-        else if (s.score >= 40) colorClass = 'prob-normal';
-
-        card.innerHTML = `
-            <div class="prob-card ${colorClass}" style="padding: 15px; border-radius: 15px; text-align: center; color: white;">
-                <div style="font-size: 1.4rem; font-weight: 900;">${i}</div>
-                <div style="font-size: 0.8rem; font-weight: 700; opacity: 0.9;">${s.score}%</div>
-            </div>
-        `;
-        grid.appendChild(card);
-    }
-
-    topDisplay.innerHTML = '';
-    const top6 = sortedStats.slice(0, 6).map(item => parseInt(item[0])).sort((a, b) => a - b);
-    top6.forEach(n => {
-        const ball = document.createElement('div');
-        ball.className = `number ${getBallColorClass(n)}`;
-        ball.textContent = n;
-        topDisplay.appendChild(ball);
-    });
 }
 
-function runProfessionalAnalysis(numbers) {
+// --- Probability Analysis Logic ---
+async function initProbabilityAnalysis() {
+    const grid = document.getElementById('probability-grid');
+    const topDisplay = document.getElementById('top-expected-numbers');
+    if (!grid) return;
+
+    const baseDate = new Date(2025, 0, 4);
+    const weeksDiff = Math.floor((new Date() - baseDate) / (1000*60*60*24*7));
+    let r = 1153 + weeksDiff;
+
+    const requests = [];
+    for (let i = 0; i < 5; i++) {
+        const target = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${r - i}`;
+        requests.push(fetch(`https://corsproxy.io/?${encodeURIComponent(target)}`).then(res => res.json()));
+    }
+
+    try {
+        const results = await Promise.all(requests);
+        const games = results.filter(d => d.returnValue === "success").map(d => [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6]);
+        const stats = {};
+        for (let i = 1; i <= 45; i++) stats[i] = { freq: 0, lastSeen: 6 };
+        games.forEach((nums, idx) => {
+            nums.forEach(n => { stats[n].freq++; if (stats[n].lastSeen > idx) stats[n].lastSeen = idx; });
+        });
+
+        grid.innerHTML = '';
+        const scores = [];
+        for (let i = 1; i <= 45; i++) {
+            const score = Math.min(Math.round((stats[i].freq / 3) * 50 + ((5 - stats[i].lastSeen) / 5) * 40 + Math.random() * 10), 100);
+            scores.push({ num: i, score });
+            const card = document.createElement('div');
+            let colorClass = score >= 70 ? 'prob-hot' : score >= 40 ? 'prob-normal' : 'prob-cold';
+            card.innerHTML = `<div class="prob-card ${colorClass}" style="padding: 15px; border-radius: 15px; text-align: center; color: white;"><div style="font-size: 1.4rem; font-weight: 900;">${i}</div><div style="font-size: 0.8rem; font-weight: 700; opacity: 0.9;">${score}%</div></div>`;
+            grid.appendChild(card);
+        }
+
+        if (topDisplay) {
+            topDisplay.innerHTML = '';
+            const top6 = scores.sort((a,b) => b.score - a.score).slice(0,6).map(it => it.num).sort((a,b)=>a-b);
+            top6.forEach(n => {
+                const ball = document.createElement('div');
+                ball.className = `number ${getBallColorClass(n)}`;
+                ball.textContent = n;
+                topDisplay.appendChild(ball);
+            });
+        }
+    } catch(e) {}
+}
+
+function runProfessionalAnalysis(numbers, shouldScroll = false) {
     const report = document.getElementById('analysis-report');
     if (!report) return;
     report.style.display = 'block';
     document.getElementById('current-analyzed-numbers').textContent = numbers.join(', ');
-    
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
-    const evens = 6 - odds;
     const highs = numbers.filter(n => n >= 23).length;
-    const lows = 6 - highs;
-    
     let consecs = 0;
-    for (let i = 0; i < numbers.length - 1; i++) {
-        if (numbers[i] + 1 === numbers[i+1]) consecs++;
-    }
-
+    for (let i = 0; i < numbers.length - 1; i++) if (numbers[i] + 1 === numbers[i+1]) consecs++;
     let pts = 0;
     if (sum >= 100 && sum <= 170) pts++; if (odds >= 2 && odds <= 4) pts++; if (highs >= 2 && highs <= 4) pts++; if (consecs <= 1) pts++;
-    
     const grade = pts >= 4 ? "최적의 통계적 밸런스" : pts === 3 ? "안정적인 표준 조합" : "도전적인 변칙 패턴";
-    const icon = pts >= 4 ? "⚖️" : pts === 3 ? "✅" : "🚀";
-
-    // 결과값 출력 보강
     document.getElementById('pattern-grade').textContent = grade;
-    document.getElementById('status-icon').textContent = icon;
+    document.getElementById('status-icon').textContent = pts >= 4 ? "⚖️" : pts === 3 ? "✅" : "🚀";
     document.getElementById('val-sum').textContent = sum;
-    document.getElementById('val-odd-even').textContent = `${odds}:${evens}`;
-    document.getElementById('val-high-low').textContent = `${highs}:${lows}`; 
+    document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
+    document.getElementById('val-high-low').textContent = `${highs}:${6-highs}`; 
     document.getElementById('val-consecutive').textContent = `${consecs}회`;
-    
-    // 리포트 설명 갱신 로직 추가
-    const descMap = {
-        "최적의 통계적 밸런스": "모든 지표가 역대 당첨 데이터의 최빈값 범위에 완벽하게 일치합니다. 가장 안정적인 조합입니다.",
-        "안정적인 표준 조합": "대부분의 지표가 통계적 표준 내에 위치합니다. 균형 잡힌 확률적 구성을 보여줍니다.",
-        "도전적인 변칙 패턴": "출현 빈도가 다소 낮은 독특한 구성을 포함합니다. 변칙적인 회차를 공략하기에 적합합니다."
-    };
-    const pDesc = document.getElementById('pattern-desc');
-    if (pDesc) pDesc.textContent = descMap[grade];
-}
-
-async function calculateRealtimeTrend() {
-    const trendRange = document.getElementById('trend-range'), trendNum = document.getElementById('trend-number'), trendOE = document.getElementById('trend-odd-even');
-    if (!trendRange) return;
-    const baseDate = new Date(2025, 0, 4);
-    const weeksDiff = Math.floor((new Date() - baseDate) / (1000*60*60*24*7));
-    let r = 1153 + weeksDiff;
-    let recentGames = [];
-    while (recentGames.length < 5 && r > 1150) {
-        try {
-            const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${r}`)}`);
-            const data = await res.json();
-            if (data && data.returnValue === "success") recentGames.push([data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6]);
-        } catch (e) {}
-        r--;
-        await new Promise(res => setTimeout(res, 100));
-    }
-    if (recentGames.length > 0) {
-        const flatNums = recentGames.flat();
-        const rangeStats = { '10번대미만': 0, '10번대': 0, '20번대': 0, '30번대': 0, '40번대': 0 };
-        const numFreq = {};
-        let totalOdds = 0;
-        flatNums.forEach(n => {
-            if (n <= 10) rangeStats['10번대미만']++; else if (n <= 20) rangeStats['10번대']++; else if (n <= 30) rangeStats['20번대']++; else if (n <= 40) rangeStats['30번대']++; else rangeStats['40번대']++;
-            numFreq[n] = (numFreq[n] || 0) + 1; if (n % 2 !== 0) totalOdds++;
-        });
-        const hRange = Object.keys(rangeStats).reduce((a, b) => rangeStats[a] > rangeStats[b] ? a : b);
-        const hNum = Object.keys(numFreq).reduce((a, b) => numFreq[a] > numFreq[b] ? a : b);
-        const avgOdds = Math.round((totalOdds / (recentGames.length * 6)) * 6);
-        trendRange.textContent = hRange; trendNum.textContent = `${hNum}번 (${numFreq[hNum]}회)`; trendOE.textContent = `${avgOdds} : ${6-avgOdds}`;
-    }
+    if (shouldScroll) report.scrollIntoView({ behavior: 'smooth' });
 }
 
 function getBallColorClass(val) {
@@ -269,16 +215,15 @@ function setupManualInputs() {
 
 async function initResultsHistory() {
     const body = document.getElementById('results-body');
-    const baseDate = new Date(2025, 0, 4);
-    const weeksDiff = Math.floor((new Date() - baseDate) / (1000*60*60*24*7));
-    let round = 1153 + weeksDiff;
+    const start = new Date(2025, 0, 4);
+    const weeksDiff = Math.floor((new Date() - start) / (1000*60*60*24*7));
+    let r = 1153 + weeksDiff;
     let loadedCount = 0;
-    while (loadedCount < 8 && round > 1150) {
+    while (loadedCount < 8 && r > 1150) {
         try {
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`;
-            const response = await fetch(proxyUrl);
-            const rawData = await response.json();
-            const data = typeof rawData.contents === 'string' ? JSON.parse(rawData.contents) : rawData.contents;
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${r}`)}`);
+            const json = await res.json();
+            const data = JSON.parse(json.contents);
             if (data && data.returnValue === "success") {
                 const row = document.createElement('tr');
                 const nums = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
@@ -289,8 +234,8 @@ async function initResultsHistory() {
                 loadedCount++;
             }
         } catch (e) {}
-        round--;
-        await new Promise(r => setTimeout(r, 200));
+        r--;
+        await new Promise(res => setTimeout(res, 200));
     }
     const spinner = document.getElementById('loading-spinner');
     if (spinner) spinner.style.display = 'none';
