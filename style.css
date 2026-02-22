@@ -138,19 +138,26 @@ body.dark-mode {
 .winning-date { color: var(--text-secondary); font-weight: 600; margin-top: 10px; }
 
 /* History Table Styles */
-.table-wrapper { overflow-x: auto; margin-top: 1rem; border-radius: 20px; border: 1px solid rgba(0,0,0,0.08); background: var(--card-bg); }
-.history-table { width: 100%; border-collapse: collapse; min-width: 800px; font-size: 0.9rem; }
-.history-table th, .history-table td { padding: 20px 10px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; }
-.history-table th { background: rgba(9, 132, 227, 0.05); font-weight: 800; color: var(--accent-color); white-space: nowrap; }
+.table-wrapper { overflow-x: auto; margin-top: 1rem; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); background: var(--card-bg); backdrop-filter: blur(10px); }
+.history-table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 0.85rem; }
+.history-table th, .history-table td { padding: 18px 10px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; vertical-align: middle; }
+.history-table th { background: rgba(9, 132, 227, 0.08); font-weight: 800; color: var(--accent-color); white-space: nowrap; }
 .history-table td { font-weight: 600; color: var(--text-primary); }
 
-.history-table .numbers-display { margin: 0; justify-content: center; transform: scale(0.9); gap: 6px; }
-.history-table .number { width: 38px; height: 38px; font-size: 0.95rem; }
-.bonus-cell { display: flex; align-items: center; justify-content: center; gap: 10px; }
-.bonus-plus { font-weight: 800; color: var(--text-secondary); }
+.history-table .numbers-display { margin: 0; justify-content: center; transform: scale(0.8); gap: 5px; }
+.history-table .number { width: 35px; height: 38px; font-size: 0.9rem; border-radius: 10px; } /* Slightly rectangular balls for table */
 
-.winner-count { font-weight: 800; color: var(--btn-secondary); }
-.prize-amount { font-weight: 800; color: var(--btn-primary); font-size: 1rem; }
+.prize-info { display: flex; flex-direction: column; gap: 4px; }
+.winner-count { color: var(--btn-secondary); font-weight: 800; }
+.prize-amount { color: var(--btn-primary); font-size: 0.95rem; font-weight: 800; }
+.total-sales { color: var(--text-secondary); font-size: 0.8rem; }
+
+/* Grade Badges */
+.grade-badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
+.grade-opt { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+.grade-std { background: rgba(52, 152, 219, 0.15); color: #2980b9; }
+.grade-exp { background: rgba(241, 196, 15, 0.15); color: #f39c12; }
+.grade-rare { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
 
 .loading-area { padding: 40px; text-align: center; color: var(--text-secondary); font-weight: 700; }
 
