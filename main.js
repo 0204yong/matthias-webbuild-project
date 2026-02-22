@@ -18,7 +18,8 @@ function playSound(type) {
     } else if(type === 'rolling') {
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
-        osc2.type = 'sine'; osc2.frequency.setValueAtTime(60, audioCtx.currentTime);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(60, audioCtx.currentTime);
         gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
         osc2.connect(gain2); gain2.connect(audioCtx.destination);
@@ -59,7 +60,7 @@ function initLottoTool() {
     tabManual.onclick = () => { tabManual.className='tab-btn active'; tabAuto.className='tab-btn'; viewManual.style.display='block'; viewAuto.style.display='none'; setupManualInputs(); };
 
     btnGen.onclick = async () => {
-        btnGen.disabled = true; display.innerHTML = '';
+        btnGen.disabled = true; display.innerHTML = ''; document.getElementById('analysis-report').style.display = 'none';
         const finalNums = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
         const balls = [];
         for (let i = 0; i < 6; i++) {
@@ -81,14 +82,16 @@ function initLottoTool() {
         const inputs = document.querySelectorAll('.manual-inputs input');
         const nums = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
         if (nums.length < 6) return alert('6개의 번호를 모두 입력해주세요!');
-        runProfessionalAnalysis(nums.sort((a,b)=>a-b), true); // shouldScroll = true
+        runProfessionalAnalysis(nums.sort((a,b)=>a-b), true);
     };
 }
 
-// --- High Speed Trend Analysis ---
+// --- FIX: Ensure Real-time Trend values are populated ---
 async function calculateRealtimeTrend() {
-    const trendRange = document.getElementById('trend-range'), trendNum = document.getElementById('trend-number'), trendOE = document.getElementById('trend-odd-even');
-    if (!trendRange) return;
+    const trendRange = document.getElementById('trend-range');
+    const trendNumber = document.getElementById('trend-number');
+    const trendOddEven = document.getElementById('trend-odd-even');
+    if (!trendRange || !trendNumber || !trendOddEven) return;
 
     const baseDate = new Date(2025, 0, 4);
     const weeksDiff = Math.floor((new Date() - baseDate) / (1000*60*60*24*7));
@@ -103,26 +106,39 @@ async function calculateRealtimeTrend() {
     try {
         const results = await Promise.all(requests);
         const games = results.filter(d => d.returnValue === "success").map(d => [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6]);
+        
         if (games.length > 0) {
             const flat = games.flat();
             const ranges = { '10번대미만': 0, '10번대': 0, '20번대': 0, '30번대': 0, '40번대': 0 };
-            const freqs = {}; let odds = 0;
+            const freqs = {}; let totalOdds = 0;
+            
             flat.forEach(n => {
-                if (n <= 10) ranges['10번대미만']++; else if (n <= 20) ranges['10번대']++; else if (n <= 30) ranges['20번대']++; else if (n <= 40) ranges['30번대']++; else ranges['40번대']++;
-                freqs[n] = (freqs[n] || 0) + 1; if (n % 2 !== 0) odds++;
+                if (n <= 10) ranges['10번대미만']++; 
+                else if (n <= 20) ranges['10번대']++; 
+                else if (n <= 30) ranges['20번대']++; 
+                else if (n <= 40) ranges['30번대']++; 
+                else ranges['40번대']++;
+                freqs[n] = (freqs[n] || 0) + 1; 
+                if (n % 2 !== 0) totalOdds++;
             });
+
             const hRange = Object.keys(ranges).reduce((a, b) => ranges[a] > ranges[b] ? a : b);
             const hNum = Object.keys(freqs).reduce((a, b) => freqs[a] > freqs[b] ? a : b);
+            const oddsRatio = Math.round((totalOdds / flat.length) * 6);
+
             trendRange.textContent = hRange;
             trendNumber.textContent = `${hNum}번 (${freqs[hNum]}회)`;
-            trendOddEven.textContent = `${Math.round((odds/flat.length)*6)} : ${6 - Math.round((odds/flat.length)*6)}`;
+            trendOddEven.textContent = `${oddsRatio} : ${6 - oddsRatio}`;
         }
     } catch (e) {
-        trendRange.textContent = "20번대"; trendNum.textContent = "27번"; trendOE.textContent = "3 : 3";
+        // Fallback in case of fetch error
+        trendRange.textContent = "20번대";
+        trendNumber.textContent = "27번 (2회)";
+        trendOddEven.textContent = "3 : 3";
     }
 }
 
-// --- Probability Analysis Logic ---
+// --- Probability Detailed Analysis ---
 async function initProbabilityAnalysis() {
     const grid = document.getElementById('probability-grid');
     const topDisplay = document.getElementById('top-expected-numbers');
@@ -226,8 +242,8 @@ async function initResultsHistory() {
             const data = JSON.parse(json.contents);
             if (data && data.returnValue === "success") {
                 const row = document.createElement('tr');
-                const nums = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
-                const numsHtml = nums.map(n => `<div class="number ${getBallColorClass(n)}" style="width:32px;height:32px;font-size:0.8rem;border-radius:8px;">${n}</div>`).join('');
+                const numbers = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
+                const numsHtml = numbers.map(n => `<div class="number ${getBallColorClass(n)}" style="width:32px;height:32px;font-size:0.8rem;border-radius:8px;">${n}</div>`).join('');
                 const prize = new Intl.NumberFormat('ko-KR').format(data.firstWinamnt);
                 row.innerHTML = `<td><strong>${data.drwNo}</strong></td><td><small>${data.drwNoDate}</small></td><td><div class="numbers-display" style="margin:0;gap:4px;">${numsHtml} <span style="color:#ccc">+</span> <div class="number ${getBallColorClass(data.bnusNo)}" style="width:32px;height:32px;font-size:0.8rem;border-radius:8px;">${data.bnusNo}</div></div></td><td><small>${data.firstPrzwnerCo}명<br>${prize}원</small></td><td><span class="grade-badge grade-opt">최적</span></td>`;
                 body.appendChild(row);
