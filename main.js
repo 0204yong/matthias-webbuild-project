@@ -211,6 +211,4 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('val-odd-even').textContent = `${odds}:${evens}`;
     document.getElementById('val-high-low').textContent = `${highs}:${lows}`; 
     document.getElementById('val-consecutive').textContent = `${consecs}회`;
-    
-    report.scrollIntoView({ behavior: 'smooth' });
 }
