@@ -10,17 +10,12 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + 0.03);
-    } else if(type === 'pop') {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
     }
 }
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Theme
+    // Theme setup
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
@@ -30,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Common Click Sound
+    // Sound setup
     document.querySelectorAll('button, a, .tab-btn').forEach(el => {
         el.addEventListener('click', () => playSound('click'));
     });
@@ -39,14 +34,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('results-body')) initResultsHistory();
 });
 
-// --- Home Tool Logic ---
+// --- Home Logic ---
 function initLottoTool() {
     const tabAuto = document.getElementById('tab-auto'), tabManual = document.getElementById('tab-manual');
     const viewAuto = document.getElementById('view-auto'), viewManual = document.getElementById('view-manual');
     const btnGen = document.getElementById('btn-generate-auto'), btnAnlz = document.getElementById('btn-analyze-manual');
 
-    tabAuto.onclick = () => { tabAuto.className='tab-btn active'; tabManual.className='tab-btn'; viewAuto.style.display='block'; viewManual.style.display='none'; };
-    tabManual.onclick = () => { tabManual.className='tab-btn active'; tabAuto.className='tab-btn'; viewManual.style.display='block'; viewAuto.style.display='none'; };
+    tabAuto.onclick = () => { 
+        tabAuto.classList.add('active'); tabManual.classList.remove('active'); 
+        viewAuto.style.display='block'; viewManual.style.display='none'; 
+    };
+    tabManual.onclick = () => { 
+        tabManual.classList.add('active'); tabAuto.classList.remove('active'); 
+        viewManual.style.display='block'; viewAuto.style.display='none'; 
+    };
 
     btnGen.onclick = async () => {
         btnGen.disabled = true;
@@ -54,45 +55,42 @@ function initLottoTool() {
         display.innerHTML = '';
         const nums = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
         
-        for (let n of nums) {
+        nums.forEach(n => {
             const ball = document.createElement('div');
             ball.className = `number ${getBallColor(n)}`;
             ball.textContent = n;
             display.appendChild(ball);
-            playSound('pop');
-            await new Promise(r => setTimeout(r, 100));
-        }
+        });
         btnGen.disabled = false;
-        runAnalysis(nums, '추천 번호');
+        showAnalysis(nums);
     };
 
     btnAnlz.onclick = () => {
         const inputs = document.querySelectorAll('.manual-inputs input');
         const nums = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
-        if (nums.length < 6) return alert('6개 번호를 입력하세요!');
-        runAnalysis(nums.sort((a,b)=>a-b), '입력 번호');
+        if (nums.length < 6) return alert('6개의 번호를 입력하세요.');
+        showAnalysis(nums.sort((a,b)=>a-b));
     };
 }
 
-// --- Results History Logic ---
+// --- History Logic ---
 async function initResultsHistory() {
     const body = document.getElementById('results-body');
     const spinner = document.getElementById('loading-spinner');
     
-    // Estimate latest round
-    const start = new Date(2025, 0, 4);
-    const weeks = Math.floor((new Date() - start) / (1000*60*60*24*7));
+    // Estimate latest round (Today is 2026-02-22)
+    const baseDate = new Date(2025, 0, 4);
+    const weeks = Math.floor((new Date() - baseDate) / (1000*60*60*24*7));
     let round = 1153 + weeks;
-
-    spinner.innerHTML = "데이터를 동기화 중입니다... 잠시만 기다려주세요. 🔄";
 
     let loaded = 0;
     while (loaded < 10 && round > 1150) {
         try {
-            const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
-            const data = await res.json();
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
+            const json = await res.json();
+            const data = JSON.parse(json.contents);
             if (data.returnValue === "success") {
-                appendHistoryRow(data);
+                appendRow(data);
                 loaded++;
             }
         } catch (e) {}
@@ -101,18 +99,18 @@ async function initResultsHistory() {
     spinner.style.display = 'none';
 }
 
-function appendHistoryRow(d) {
+function appendRow(d) {
     const body = document.getElementById('results-body');
     const row = document.createElement('tr');
     const nums = [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6];
-    const numsHtml = nums.map(n => `<div class="number ${getBallColor(n)}" style="width:30px;height:30px;font-size:0.8rem;">${n}</div>`).join('');
+    const numsHtml = nums.map(n => `<div class="number ${getBallColor(n)}" style="width:35px;height:35px;font-size:0.9rem;">${n}</div>`).join('');
     const prize = new Intl.NumberFormat('ko-KR').format(d.firstWinamnt);
     
     row.innerHTML = `
         <td>${d.drwNo}회</td>
-        <td><small>${d.drwNoDate}</small></td>
-        <td><div class="numbers-display" style="margin:0;gap:5px;">${numsHtml} <span style="color:#ccc">+</span> <div class="number ${getBallColor(d.bnusNo)}" style="width:30px;height:30px;font-size:0.8rem;">${d.bnusNo}</div></div></td>
-        <td><small>${d.firstPrzwnerCo}명 / ${prize}원</small></td>
+        <td>${d.drwNoDate}</td>
+        <td><div class="numbers-display" style="margin:0;gap:5px;">${numsHtml}</div></td>
+        <td>${d.firstPrzwnerCo}명 / ${prize}원</td>
         <td><span class="grade-badge grade-opt">최적</span></td>
     `;
     body.appendChild(row);
@@ -124,12 +122,9 @@ function getBallColor(n) {
     return 'num-41-45';
 }
 
-function runAnalysis(nums, type) {
+function showAnalysis(nums) {
     const rep = document.getElementById('analysis-report');
     rep.style.display = 'block';
-    document.getElementById('current-analyzed-numbers').textContent = `${type}: ${nums.join(', ')}`;
-    const sum = nums.reduce((a,b)=>a+b, 0);
-    document.getElementById('val-sum').textContent = sum;
-    document.getElementById('pattern-grade').textContent = (sum >= 100 && sum <= 170) ? "최적의 밸런스" : "안정적 조합";
+    document.getElementById('current-analyzed-numbers').textContent = nums.join(', ');
     rep.scrollIntoView({ behavior: 'smooth' });
 }
