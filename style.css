@@ -177,11 +177,95 @@ h2 {
 .num-31-40 { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
 .num-41-45 { background: linear-gradient(135deg, #2ecc71, #27ae60); }
 
-/* Analysis Grid */
+/* Tabs and Mode Switch */
+.mode-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 2.5rem;
+}
+
+.tab-btn {
+    padding: 10px 24px;
+    border: 2px solid var(--accent-color);
+    background: transparent;
+    color: var(--accent-color);
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-btn.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Manual Input Section */
+.manual-input-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 2.5rem 0;
+    flex-wrap: wrap;
+}
+
+.manual-input {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    transition: all 0.3s;
+    outline: none;
+}
+
+.manual-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
+    transform: scale(1.05);
+}
+
+.manual-input.error {
+    border-color: #e74c3c;
+    animation: shake 0.4s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Updated Stats Display */
+.stats-detail {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.score-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.score-good { background: rgba(46, 204, 113, 0.2); color: #27ae60; }
+.score-average { background: rgba(241, 196, 15, 0.2); color: #f39c12; }
+.score-rare { background: rgba(231, 76, 60, 0.2); color: #c0392b; }
+
+/* Analysis Grid Enhancement */
 .analysis-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
     margin-top: 2rem;
 }
 

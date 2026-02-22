@@ -1,9 +1,18 @@
+// DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const body = document.body;
 const generateButton = document.getElementById('generate-button');
 const numbersContainer = document.getElementById('numbers-container');
 const oddEvenStats = document.getElementById('odd-even-stats');
 const sumStats = document.getElementById('sum-stats');
+
+// Manual Input Elements
+const autoModeBtn = document.getElementById('auto-mode-btn');
+const manualModeBtn = document.getElementById('manual-mode-btn');
+const autoView = document.getElementById('auto-generator-view');
+const manualView = document.getElementById('manual-generator-view');
+const manualInputs = document.querySelectorAll('.manual-input');
+const manualAnalyzeBtn = document.getElementById('manual-analyze-button');
 
 // Dark Mode logic
 const savedTheme = localStorage.getItem('theme');
@@ -19,38 +28,33 @@ themeToggle.addEventListener('click', () => {
     themeToggle.textContent = isDarkMode ? '☀️' : '🌙';
 });
 
-// Lotto generation logic
+// Tab Switching
+autoModeBtn.addEventListener('click', () => {
+    autoModeBtn.classList.add('active');
+    manualModeBtn.classList.remove('active');
+    autoView.style.display = 'block';
+    manualView.style.display = 'none';
+});
+
+manualModeBtn.addEventListener('click', () => {
+    manualModeBtn.classList.add('active');
+    autoModeBtn.classList.remove('active');
+    manualView.style.display = 'block';
+    autoView.style.display = 'none';
+});
+
+// Auto Generation
 generateButton.addEventListener('click', async () => {
     generateButton.disabled = true;
     generateButton.textContent = '추출 중... 🎰';
-    
     numbersContainer.innerHTML = '';
     
-    const numbers = [];
-    while (numbers.length < 6) {
-        const num = Math.floor(Math.random() * 45) + 1;
-        if (!numbers.includes(num)) {
-            numbers.push(num);
-        }
-    }
-    numbers.sort((a, b) => a - b);
-    
-    // Analyze and update stats
-    updateStats(numbers);
+    const numbers = generateLottoNumbers();
+    updateStats(numbers, 'auto');
     
     for (const num of numbers) {
-        const numElement = document.createElement('div');
-        numElement.classList.add('number');
-        
-        if (num <= 10) numElement.classList.add('num-1-10');
-        else if (num <= 20) numElement.classList.add('num-11-20');
-        else if (num <= 30) numElement.classList.add('num-21-30');
-        else if (num <= 40) numElement.classList.add('num-31-40');
-        else numElement.classList.add('num-41-45');
-        
-        numElement.textContent = num;
+        const numElement = createNumberElement(num);
         numbersContainer.appendChild(numElement);
-        
         await new Promise(resolve => setTimeout(resolve, 150));
     }
     
@@ -58,13 +62,102 @@ generateButton.addEventListener('click', async () => {
     generateButton.textContent = '번호 다시 생성하기 ✨';
 });
 
-function updateStats(numbers) {
+// Manual Analysis
+manualAnalyzeBtn.addEventListener('click', () => {
+    const numbers = Array.from(manualInputs)
+        .map(input => parseInt(input.value))
+        .filter(num => !isNaN(num));
+
+    // Validation
+    if (numbers.length < 6) {
+        alert('6개의 번호를 모두 입력해주세요!');
+        return;
+    }
+    
+    if (new Set(numbers).size !== 6) {
+        alert('중복된 번호가 있습니다!');
+        return;
+    }
+
+    if (numbers.some(n => n < 1 || n > 45)) {
+        alert('1~45 사이의 숫자만 입력 가능합니다!');
+        return;
+    }
+
+    numbers.sort((a, b) => a - b);
+    updateStats(numbers, 'manual');
+    
+    // UI Update: Move to analysis section
+    document.getElementById('analysis').scrollIntoView({ behavior: 'smooth' });
+});
+
+// Helper Functions
+function generateLottoNumbers() {
+    const numbers = [];
+    while (numbers.length < 6) {
+        const num = Math.floor(Math.random() * 45) + 1;
+        if (!numbers.includes(num)) {
+            numbers.push(num);
+        }
+    }
+    return numbers.sort((a, b) => a - b);
+}
+
+function createNumberElement(num) {
+    const el = document.createElement('div');
+    el.classList.add('number');
+    if (num <= 10) el.classList.add('num-1-10');
+    else if (num <= 20) el.classList.add('num-11-20');
+    else if (num <= 30) el.classList.add('num-21-30');
+    else if (num <= 40) el.classList.add('num-31-40');
+    else el.classList.add('num-41-45');
+    el.textContent = num;
+    return el;
+}
+
+function updateStats(numbers, mode) {
     const sum = numbers.reduce((a, b) => a + b, 0);
     const odds = numbers.filter(n => n % 2 !== 0).length;
     const evens = 6 - odds;
     
-    oddEvenStats.innerHTML = `<span style="color: #e74c3c">홀수 ${odds}</span> : <span style="color: #3498db">짝수 ${evens}</span>`;
-    sumStats.innerHTML = `총합: ${sum} <br><small style="font-size: 0.8rem; color: var(--text-secondary)">(${sum >= 100 && sum <= 170 ? '적정 범위' : '특이 범위'})</small>`;
+    // Advanced Analysis for "Appropriateness"
+    const score = calculateBalanceScore(numbers, sum, odds);
+    
+    oddEvenStats.innerHTML = `
+        <span style="color: #e74c3c">홀수 ${odds}</span> : <span style="color: #3498db">짝수 ${evens}</span>
+        <div class="stats-detail">(${odds}:${evens} 비율)</div>
+    `;
+    
+    sumStats.innerHTML = `
+        총합: ${sum} 
+        <div class="stats-detail">${mode === 'manual' ? '입력하신 번호 조합' : '추천 드린 조합'}의 총합입니다.</div>
+        <span class="score-badge ${score.class}">${score.text}</span>
+    `;
+}
+
+function calculateBalanceScore(numbers, sum, odds) {
+    let balancePoints = 0;
+    
+    // 1. Sum Check (Ideal: 100-170)
+    if (sum >= 100 && sum <= 170) balancePoints += 2;
+    else if (sum >= 80 && sum <= 200) balancePoints += 1;
+    
+    // 2. Odd:Even Check (Ideal: 2:4, 3:3, 4:2)
+    if (odds >= 2 && odds <= 4) balancePoints += 2;
+    else if (odds >= 1 && odds <= 5) balancePoints += 1;
+    
+    // 3. Consecutive Numbers Check (Ideal: Max 2 consecutive)
+    let consecutiveCount = 0;
+    for (let i = 0; i < numbers.length - 1; i++) {
+        if (numbers[i] + 1 === numbers[i+1]) consecutiveCount++;
+    }
+    if (consecutiveCount <= 1) balancePoints += 2;
+    else if (consecutiveCount === 2) balancePoints += 1;
+
+    // Final Scoring
+    if (balancePoints >= 5) return { text: '✨ 통계적으로 우수한 균형 조합', class: 'score-good' };
+    if (balancePoints >= 3) return { text: '⚖️ 무난한 평균적 조합', class: 'score-average' };
+    return { text: '🌋 확률적으로 희귀한 패턴', class: 'score-rare' };
 }
 
 // Smooth scrolling for navigation
