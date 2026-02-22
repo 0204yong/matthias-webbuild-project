@@ -204,8 +204,26 @@ function runProfessionalAnalysis(numbers, type) {
     if (highs >= 2 && highs <= 4) pts++;
     if (consecs <= 1) pts++;
     
-    document.getElementById('pattern-grade').textContent = pts >= 4 ? "최적의 통계적 밸런스" : pts === 3 ? "안정적인 표준 조합" : "도전적인 변칙 패턴";
-    document.getElementById('status-icon').textContent = pts >= 4 ? "⚖️" : pts === 3 ? "✅" : "🚀";
+    let grade, desc, icon;
+    if (pts >= 4) { 
+        grade = "최적의 통계적 밸런스"; 
+        desc = "이 조합은 번호 총합, 홀짝 비율, 고저차, 연속 번호 등 모든 핵심 지표가 역대 당첨 데이터의 가장 빈번한 출현 범위(최빈값)에 완벽하게 일치합니다. 통계학적으로 가장 안정적이며 당첨 확률이 높은 표준 분포의 정점에 있는 조합입니다.";
+        icon = "⚖️"; 
+    }
+    else if (pts === 3) { 
+        grade = "안정적인 표준 조합"; 
+        desc = "대부분의 지표가 통계적 표준 편차 내에 위치하고 있습니다. 특정 항목에서 약간의 변동성이 있으나, 전체적인 균형은 매우 우수합니다. 역대 당첨 번호들 중 다수가 속하는 범주로, 무난하면서도 강력한 실효성을 가진 조합입니다.";
+        icon = "✅"; 
+    }
+    else { 
+        grade = "도전적인 변칙 패턴"; 
+        desc = "통계적으로 출현 빈도가 다소 낮은 독특한 구성을 포함하고 있습니다. 평범한 패턴을 벗어난 회차의 당첨 번호들과 유사한 특징을 보입니다. 남들과 차별화된 선택을 원하거나, 변칙적인 회차를 공략하기에 적합한 전략적 조합입니다.";
+        icon = "🚀"; 
+    }
+    
+    document.getElementById('pattern-grade').textContent = grade;
+    document.getElementById('pattern-desc').textContent = desc;
+    document.getElementById('status-icon').textContent = icon;
     
     document.getElementById('val-sum').textContent = sum;
     document.getElementById('val-odd-even').textContent = `${odds}:${evens}`;
