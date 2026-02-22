@@ -33,9 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
         });
     }
+    
     document.querySelectorAll('button, a, .tab-btn').forEach(el => {
         el.addEventListener('click', () => playSound('click'));
     });
+
     if (document.getElementById('tab-auto')) initLottoTool();
     if (document.getElementById('results-body')) initResultsHistory();
 });
@@ -47,6 +49,7 @@ function initLottoTool() {
     const btnGen = document.getElementById('btn-generate-auto'), btnAnlz = document.getElementById('btn-analyze-manual');
     const display = document.getElementById('auto-numbers-display');
 
+    // Tab Switching
     tabAuto.onclick = () => { 
         tabAuto.className='tab-btn active'; tabManual.className='tab-btn'; 
         viewAuto.style.display='block'; viewManual.style.display='none'; 
@@ -56,15 +59,17 @@ function initLottoTool() {
         tabManual.className='tab-btn active'; tabAuto.className='tab-btn'; 
         viewManual.style.display='block'; viewAuto.style.display='none'; 
         document.getElementById('analysis-report').style.display = 'none';
+        setupManualInputs();
     };
 
+    // Auto Generation
     btnGen.onclick = async () => {
         btnGen.disabled = true;
         btnGen.textContent = '데이터 분석 중...';
         display.innerHTML = '';
         document.getElementById('analysis-report').style.display = 'none';
 
-        const finalNums = generateWeightedNumbers();
+        const finalNums = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
         const balls = [];
 
         for (let i = 0; i < 6; i++) {
@@ -94,16 +99,36 @@ function initLottoTool() {
         btnGen.textContent = '번호 추출 시작 ✨';
     };
 
+    // Manual Analysis
     btnAnlz.onclick = () => {
         const inputs = document.querySelectorAll('.manual-inputs input');
         const nums = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
         if (nums.length < 6) return alert('6개의 번호를 모두 입력해주세요!');
+        if (new Set(nums).size !== 6) return alert('중복된 번호가 있습니다!');
         runProfessionalAnalysis(nums.sort((a,b)=>a-b), '입력 번호');
     };
 }
 
-function generateWeightedNumbers() {
-    return Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
+// Setup Manual Input Interactions
+function setupManualInputs() {
+    const inputs = document.querySelectorAll('.manual-inputs input');
+    inputs.forEach(input => {
+        input.className = 'manual-input'; // Ensure style class is applied
+        input.oninput = () => {
+            const val = parseInt(input.value);
+            // Remove old color classes
+            input.classList.remove('filled-1', 'filled-2', 'filled-3', 'filled-4', 'filled-5');
+            
+            if (val >= 1 && val <= 45) {
+                if (val <= 10) input.classList.add('filled-1');
+                else if (val <= 20) input.classList.add('filled-2');
+                else if (val <= 30) input.classList.add('filled-3');
+                else if (val <= 40) input.classList.add('filled-4');
+                else input.classList.add('filled-5');
+                playSound('pop');
+            }
+        };
+    });
 }
 
 // --- History Logic ---
@@ -128,10 +153,13 @@ async function initResultsHistory() {
         round--;
         await new Promise(r => setTimeout(r, 200));
     }
+    const spinner = document.getElementById('loading-spinner');
+    if (spinner) spinner.style.display = 'none';
 }
 
 function appendHistoryRow(d) {
     const body = document.getElementById('results-body');
+    if (!body) return;
     const row = document.createElement('tr');
     const nums = [d.drwtNo1, d.drwtNo2, d.drwtNo3, d.drwtNo4, d.drwtNo5, d.drwtNo6];
     const numsHtml = nums.map(n => `<div class="number ${getBallColorClass(n)}" style="width:32px;height:32px;font-size:0.8rem;border-radius:8px;">${n}</div>`).join('');
@@ -154,6 +182,7 @@ function getBallColorClass(val) {
 
 function runProfessionalAnalysis(numbers, type) {
     const report = document.getElementById('analysis-report');
+    if (!report) return;
     report.style.display = 'block';
     document.getElementById('current-analyzed-numbers').textContent = numbers.join(', ');
     const sum = numbers.reduce((a, b) => a + b, 0);
@@ -164,4 +193,5 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
     document.getElementById('val-high-low').textContent = `${highs}:${6-highs}`; 
     document.getElementById('val-consecutive').textContent = "분석 완료";
+    report.scrollIntoView({ behavior: 'smooth' });
 }
