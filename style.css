@@ -119,6 +119,18 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
 .plus-icon { font-size: 2rem; font-weight: 800; color: var(--text-secondary); }
 .winning-date { color: var(--text-secondary); font-weight: 600; margin-top: 10px; }
 
+/* History Table Styles */
+.table-wrapper { overflow-x: auto; margin-top: 1rem; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); }
+.history-table { width: 100%; border-collapse: collapse; background: var(--card-bg); font-size: 0.95rem; }
+.history-table th, .history-table td { padding: 18px 12px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; }
+.history-table th { background: rgba(9, 132, 227, 0.05); font-weight: 800; color: var(--accent-color); }
+.history-table td { font-weight: 600; color: var(--text-primary); }
+
+.history-table .numbers-display { margin: 0; justify-content: center; transform: scale(0.85); gap: 8px; }
+.history-table .number { width: 42px; height: 42px; font-size: 1rem; }
+
+.loading-area { padding: 40px; text-align: center; color: var(--text-secondary); font-weight: 700; }
+
 /* Guide Preview */
 .guide-preview-section { margin-top: 4rem; }
 .guide-preview-section h2 { font-size: 1.8rem; margin-bottom: 2rem; text-align: center; }
