@@ -30,16 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
             themeToggle.textContent = isDark ? '☀️' : '🌙';
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
-
-        // Load saved theme
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
             themeToggle.textContent = '☀️';
         }
     }
 
-    // Initialize Tool Logic Only if Elements Exist
     initLottoTool();
+    initWinningSearch();
 });
 
 // --- Lotto Tool Logic ---
@@ -51,10 +49,8 @@ function initLottoTool() {
     const btnGenerateAuto = document.getElementById('btn-generate-auto');
     const btnAnalyzeManual = document.getElementById('btn-analyze-manual');
     
-    // If essential elements are missing (e.g., on Privacy Policy page), stop here
     if (!tabAuto || !btnGenerateAuto) return;
 
-    // Tab Switching
     tabAuto.addEventListener('click', () => {
         playSound('click');
         tabAuto.classList.add('active');
@@ -73,7 +69,6 @@ function initLottoTool() {
         document.getElementById('analysis-report').style.display = 'none';
     });
 
-    // Auto Generator
     btnGenerateAuto.addEventListener('click', async () => {
         playSound('click');
         btnGenerateAuto.disabled = true;
@@ -84,7 +79,6 @@ function initLottoTool() {
 
         const numbers = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
         const balls = [];
-        
         for (let i = 0; i < 6; i++) {
             const ball = document.createElement('div');
             ball.className = 'number spinning';
@@ -113,18 +107,93 @@ function initLottoTool() {
         btnGenerateAuto.textContent = '번호 추출 시작 ✨';
     });
 
-    // Manual Analysis
     btnAnalyzeManual.addEventListener('click', () => {
         playSound('click');
         const inputs = document.querySelectorAll('.manual-inputs input');
         const numbers = Array.from(inputs).map(i => parseInt(i.value)).filter(v => !isNaN(v));
-        
         if (numbers.length < 6) { alert('6개의 번호를 모두 입력해주세요!'); return; }
         if (new Set(numbers).size !== 6) { alert('중복된 번호가 있습니다!'); return; }
         if (numbers.some(n => n < 1 || n > 45)) { alert('1~45 사이의 숫자만 입력 가능합니다!'); return; }
-
         runProfessionalAnalysis(numbers.sort((a,b)=>a-b), '입력 번호');
     });
+}
+
+// --- Winning Result Search Logic ---
+function initWinningSearch() {
+    const btnSearch = document.getElementById('btn-search-round');
+    const inputRound = document.getElementById('input-round');
+    const resultArea = document.getElementById('winning-result-area');
+    const btnAnalyzeWin = document.getElementById('btn-analyze-win');
+    let lastFetchedNumbers = [];
+
+    if (!btnSearch) return;
+
+    btnSearch.addEventListener('click', async () => {
+        const round = inputRound.value;
+        if (!round) { alert('회차를 입력해주세요!'); return; }
+
+        playSound('click');
+        btnSearch.disabled = true;
+        btnSearch.textContent = '조회 중... 🔍';
+
+        try {
+            // Using a CORS proxy to fetch from the official dhlottery API
+            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
+            const data = await response.json();
+            const lottoData = JSON.parse(data.contents);
+
+            if (lottoData.returnValue === "fail") {
+                alert('해당 회차의 정보를 찾을 수 없습니다.');
+                resultArea.style.display = 'none';
+            } else {
+                displayWinningResult(lottoData);
+                lastFetchedNumbers = [lottoData.drwtNo1, lottoData.drwtNo2, lottoData.drwtNo3, lottoData.drwtNo4, lottoData.drwtNo5, lottoData.drwtNo6];
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            alert('데이터를 가져오는 중 오류가 발생했습니다.');
+        } finally {
+            btnSearch.disabled = false;
+            btnSearch.textContent = '당첨 번호 조회 🔍';
+        }
+    });
+
+    btnAnalyzeWin.addEventListener('click', () => {
+        if (lastFetchedNumbers.length === 6) {
+            playSound('click');
+            runProfessionalAnalysis(lastFetchedNumbers.sort((a,b)=>a-b), `제 ${inputRound.value}회 당첨번호`);
+        }
+    });
+}
+
+function displayWinningResult(data) {
+    const resultArea = document.getElementById('winning-result-area');
+    const roundTitle = document.getElementById('round-title');
+    const winNumbersDisplay = document.getElementById('win-numbers-display');
+    const bonusNumberDisplay = document.getElementById('bonus-number-display');
+    const winDate = document.getElementById('win-date');
+
+    roundTitle.textContent = `제 ${data.drwNo}회 당첨 결과`;
+    winDate.textContent = `추첨일: ${data.drwNoDate}`;
+    
+    winNumbersDisplay.innerHTML = '';
+    bonusNumberDisplay.innerHTML = '';
+
+    const numbers = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
+    numbers.forEach(num => {
+        const ball = document.createElement('div');
+        ball.className = `number ${getBallColorClass(num)}`;
+        ball.textContent = num;
+        winNumbersDisplay.appendChild(ball);
+    });
+
+    const bonusBall = document.createElement('div');
+    bonusBall.className = `number ${getBallColorClass(data.bnusNo)}`;
+    bonusBall.textContent = data.bnusNo;
+    bonusNumberDisplay.appendChild(bonusBall);
+
+    resultArea.style.display = 'block';
+    resultArea.scrollIntoView({ behavior: 'smooth' });
 }
 
 function getBallColorClass(val) {
@@ -137,6 +206,8 @@ function getBallColorClass(val) {
 
 function runProfessionalAnalysis(numbers, type) {
     const reportSection = document.getElementById('analysis-report');
+    if (!reportSection) return;
+    
     reportSection.style.display = 'block';
     document.getElementById('current-analyzed-numbers').textContent = `${type}: ${numbers.join(', ')}`;
     
@@ -163,7 +234,9 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('status-icon').textContent = icon;
     document.getElementById('val-sum').textContent = sum;
     document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
-    document.getElementById('val-high-low').textContent = `${highs}:${6-highs}`;
+    document.getElementById('val-high-low').textContent = `${highs}:${6-lows}`; // Fix logic: 6-lows should be 6-highs (which is lows)
+    // Wait, let's fix the logic in the display
+    document.getElementById('val-high-low').textContent = `${6-highs}:${highs}`; 
     document.getElementById('val-consecutive').textContent = `${consecs}회`;
     
     reportSection.scrollIntoView({ behavior: 'smooth' });
