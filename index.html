@@ -71,9 +71,26 @@
                 <p>조회하고 싶은 로또 회차 번호를 입력하세요.</p>
             </div>
             
-            <div class="search-group">
-                <input type="number" id="input-round" placeholder="회차 입력 (예: 1150)">
-                <button id="btn-search-round" class="btn-primary">당첨 번호 조회 🔍</button>
+            <div class="search-filters">
+                <select id="select-year">
+                    <option value="2025">2025년</option>
+                    <option value="2026">2026년</option>
+                </select>
+                <select id="select-month">
+                    <!-- 1~12월 -->
+                    <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
+                    <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
+                    <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
+                    <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                </select>
+                <select id="select-week">
+                    <option value="1">1주차 (첫째 토요일)</option>
+                    <option value="2">2주차</option>
+                    <option value="3">3주차</option>
+                    <option value="4">4주차</option>
+                    <option value="5">5주차</option>
+                </select>
+                <button id="btn-search-period" class="btn-primary">당첨 결과 조회 🔍</button>
             </div>
 
             <div id="winning-result-area" class="winning-result-area" style="display: none;">

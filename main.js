@@ -14,14 +14,12 @@ function playSound(type) {
     osc.start(); osc.stop(audioCtx.currentTime + 0.06);
 }
 
-// --- Initialization & Common Logic ---
+// --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Hover Sounds
-    document.querySelectorAll('button, a, input').forEach(el => {
+    document.querySelectorAll('button, a, input, select').forEach(el => {
         el.addEventListener('mouseenter', () => playSound('menuHover'));
     });
 
-    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
@@ -37,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initLottoTool();
-    initWinningSearch();
+    initWinningPeriodSearch();
 });
 
 // --- Lotto Tool Logic ---
@@ -118,64 +116,120 @@ function initLottoTool() {
     });
 }
 
-// --- Winning Result Search Logic ---
-function initWinningSearch() {
-    const btnSearch = document.getElementById('btn-search-round');
-    const inputRound = document.getElementById('input-round');
+// --- Period Search Logic ---
+function initWinningPeriodSearch() {
+    const btnSearch = document.getElementById('btn-search-period');
+    const selectYear = document.getElementById('select-year');
+    const selectMonth = document.getElementById('select-month');
+    const selectWeek = document.getElementById('select-week');
     const resultArea = document.getElementById('winning-result-area');
     const btnAnalyzeWin = document.getElementById('btn-analyze-win');
     let lastFetchedNumbers = [];
+    let lastFetchedRound = 0;
 
     if (!btnSearch) return;
 
     btnSearch.addEventListener('click', async () => {
-        const round = inputRound.value;
-        if (!round) { alert('회차를 입력해주세요!'); return; }
+        const year = parseInt(selectYear.value);
+        const month = parseInt(selectMonth.value);
+        const week = parseInt(selectWeek.value);
+
+        const round = calculateRoundFromPeriod(year, month, week);
+        
+        if (!round) {
+            alert('해당 주차에 로또 추첨 데이터가 없습니다. (다른 주차를 선택해주세요)');
+            return;
+        }
+
+        // Current Date check (Today is 2026-02-22)
+        // If the calculated round date is in the future, alert.
+        const roundDate = getRoundDate(round);
+        if (roundDate > new Date("2026-02-22")) {
+            alert('아직 추첨 전인 주차입니다.');
+            return;
+        }
 
         playSound('click');
         btnSearch.disabled = true;
-        btnSearch.textContent = '조회 중... 🔍';
+        btnSearch.textContent = '분석 데이터 호출 중... 🔍';
 
         try {
-            // Using a CORS proxy to fetch from the official dhlottery API
             const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
             const data = await response.json();
             const lottoData = JSON.parse(data.contents);
 
             if (lottoData.returnValue === "fail") {
-                alert('해당 회차의 정보를 찾을 수 없습니다.');
+                alert('데이터를 가져오지 못했습니다. (회차 번호: ' + round + ')');
                 resultArea.style.display = 'none';
             } else {
-                displayWinningResult(lottoData);
+                displayWinningResult(lottoData, `${year}년 ${month}월 ${week}주차`);
                 lastFetchedNumbers = [lottoData.drwtNo1, lottoData.drwtNo2, lottoData.drwtNo3, lottoData.drwtNo4, lottoData.drwtNo5, lottoData.drwtNo6];
+                lastFetchedRound = round;
             }
         } catch (error) {
-            console.error('Fetch error:', error);
-            alert('데이터를 가져오는 중 오류가 발생했습니다.');
+            alert('네트워크 오류가 발생했습니다.');
         } finally {
             btnSearch.disabled = false;
-            btnSearch.textContent = '당첨 번호 조회 🔍';
+            btnSearch.textContent = '당첨 결과 조회 🔍';
         }
     });
 
     btnAnalyzeWin.addEventListener('click', () => {
         if (lastFetchedNumbers.length === 6) {
             playSound('click');
-            runProfessionalAnalysis(lastFetchedNumbers.sort((a,b)=>a-b), `제 ${inputRound.value}회 당첨번호`);
+            runProfessionalAnalysis(lastFetchedNumbers.sort((a,b)=>a-b), `${selectYear.value}년 ${selectMonth.value}월 ${selectWeek.value}주차 당첨번호`);
         }
     });
 }
 
-function displayWinningResult(data) {
+// Algorithm to calculate Lotto Round from (Year, Month, Week)
+// Base point: Round 1153 on Jan 4, 2025 (Sat)
+function calculateRoundFromPeriod(year, month, week) {
+    const firstDayOfMonth = new Date(year, month - 1, 1);
+    let firstSaturday = new Date(firstDayOfMonth);
+    
+    // Find first Saturday
+    while (firstSaturday.getDay() !== 6) {
+        firstSaturday.setDate(firstSaturday.getDate() + 1);
+    }
+    
+    // Target Date = First Saturday + (Week - 1) * 7 days
+    const targetDate = new Date(firstSaturday);
+    targetDate.setDate(targetDate.getDate() + (week - 1) * 7);
+    
+    // Ensure the target date is still in the same month
+    if (targetDate.getMonth() !== month - 1) {
+        return null;
+    }
+
+    // Base info
+    const baseDate = new Date(2025, 0, 4); // Jan 4, 2025
+    const baseRound = 1153;
+    
+    // Calculate difference in weeks
+    const diffInMs = targetDate - baseDate;
+    const diffInWeeks = Math.round(diffInMs / (1000 * 60 * 60 * 24 * 7));
+    
+    return baseRound + diffInWeeks;
+}
+
+function getRoundDate(round) {
+    const baseDate = new Date(2025, 0, 4);
+    const baseRound = 1153;
+    const targetDate = new Date(baseDate);
+    targetDate.setDate(targetDate.getDate() + (round - baseRound) * 7);
+    return targetDate;
+}
+
+function displayWinningResult(data, periodString) {
     const resultArea = document.getElementById('winning-result-area');
     const roundTitle = document.getElementById('round-title');
     const winNumbersDisplay = document.getElementById('win-numbers-display');
     const bonusNumberDisplay = document.getElementById('bonus-number-display');
     const winDate = document.getElementById('win-date');
 
-    roundTitle.textContent = `제 ${data.drwNo}회 당첨 결과`;
+    roundTitle.innerHTML = `<small style="font-size: 1rem; opacity: 0.7;">${periodString}</small><br>제 ${data.drwNo}회 당첨 결과`;
     winDate.textContent = `추첨일: ${data.drwNoDate}`;
-    
     winNumbersDisplay.innerHTML = '';
     bonusNumberDisplay.innerHTML = '';
 
@@ -234,8 +288,6 @@ function runProfessionalAnalysis(numbers, type) {
     document.getElementById('status-icon').textContent = icon;
     document.getElementById('val-sum').textContent = sum;
     document.getElementById('val-odd-even').textContent = `${odds}:${6-odds}`;
-    document.getElementById('val-high-low').textContent = `${highs}:${6-lows}`; // Fix logic: 6-lows should be 6-highs (which is lows)
-    // Wait, let's fix the logic in the display
     document.getElementById('val-high-low').textContent = `${6-highs}:${highs}`; 
     document.getElementById('val-consecutive').textContent = `${consecs}회`;
     

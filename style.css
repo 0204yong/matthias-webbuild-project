@@ -99,12 +99,14 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg-gradient); co
 /* Winning Section Styles */
 .winning-card { background: var(--card-bg); padding: 3rem 2rem; border-radius: var(--border-radius); border-top: 5px solid #f1c40f; }
 
-.search-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 3rem; }
-.search-group input {
-    width: 250px; height: 55px; border-radius: 15px; border: 2px solid #ddd; padding: 0 20px;
-    font-size: 1.1rem; font-weight: 700; outline: none; transition: all 0.3s;
+.search-filters { display: flex; justify-content: center; gap: 10px; margin-bottom: 3rem; flex-wrap: wrap; }
+.search-filters select {
+    height: 55px; border-radius: 12px; border: 2px solid #ddd; padding: 0 15px;
+    font-size: 1rem; font-weight: 700; outline: none; transition: all 0.3s;
+    background-color: var(--card-bg); color: var(--text-primary);
 }
-.search-group input:focus { border-color: var(--accent-color); box-shadow: 0 0 15px rgba(9, 132, 227, 0.1); }
+.search-filters select:focus { border-color: var(--accent-color); }
+.search-filters button { height: 55px; padding: 0 30px; }
 
 .winning-result-area {
     margin-top: 2rem; padding: 2rem; background: rgba(0,0,0,0.02); border-radius: 25px;
