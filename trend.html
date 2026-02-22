@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>번호별 출현 기대 확률 | Lotto Hub 🔥</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">Lotto Hub 💎</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">홈으로</a>
+                <a href="results.html" class="nav-link">당첨 결과</a>
+                <a href="guide.html" class="nav-link">분석 가이드</a>
+            </div>
+            <button id="theme-toggle">🌙</button>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 1000px;">
+        <header class="game-header">
+            <h1>번호별 재출현 기대지수 🔥</h1>
+            <p>최근 5주간의 빅데이터를 분석하여 산출한 이번 주 번호별 당첨 확률 분포입니다.</p>
+        </header>
+
+        <!-- Legend -->
+        <div class="probability-legend glass" style="display: flex; justify-content: center; gap: 20px; padding: 1rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; background: #ff7675; border-radius: 3px;"></span> 뜨거움 (Hot)</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; background: #fdcb6e; border-radius: 3px;"></span> 보통 (Normal)</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; background: #74b9ff; border-radius: 3px;"></span> 차가움 (Cold)</div>
+        </div>
+
+        <!-- Numbers Grid -->
+        <section id="probability-grid" class="numbers-grid glass" style="padding: 2rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px;">
+            <!-- 1-45 Numbers will be generated here -->
+            <div class="loading-msg" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                빅데이터 통계 분석 엔진 가동 중... 🔄
+            </div>
+        </section>
+
+        <!-- Top Picks Section -->
+        <section class="top-picks glass" style="margin-top: 3rem; padding: 2rem; text-align: center;">
+            <h2 style="margin-bottom: 1.5rem;">AI 추천 최상위 기대 번호 🌟</h2>
+            <div id="top-expected-numbers" class="numbers-display" style="margin: 0;">
+                <!-- Top 6 numbers will appear here -->
+            </div>
+            <p style="margin-top: 1.5rem; color: var(--text-sub); font-size: 0.9rem;">* 위 번호는 최근 5주간의 출현 주기와 패턴 강도를 종합한 AI 추천 조합입니다.</p>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2026 Lotto Hub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
